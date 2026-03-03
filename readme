@@ -1,0 +1,26 @@
+
+Estrutura de las carpetas
+backend/
+├── src/
+│   ├── api/                    # Punto de entrada de los servicios
+│   │   ├── auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)
+│   │   │   ├── controllers/
+│   │   │   ├── models/         # userModel.js
+│   │   │   └── routes/
+│   │   └── campus-service/     # DOMINIO: Cafetería y Market (NoSQL)
+│   │       ├── controllers/
+│   │       ├── models/         # productModel.js, orderModel.js
+│   │       └── routes/
+│   ├── config/                 # Configuraciones Globales
+│   │   ├── dbSql.js            # Conexión MySQL
+│   │   └── dbNoSql.js          # Conexión MongoDB
+│   ├── middlewares/            # Compartidos (Auth, Validaciones)
+│   │   ├── authMiddleware.js
+│   │   └── roleMiddleware.js
+│   ├── services/               # Lógica de negocio pesada o externa
+│   │   ├── mailService.js      # Para recuperar contraseña (SQL)
+│   │   └── qrService.js        # Para generar QRs (NoSQL)
+│   └── utils/                  # Helpers comunes
+├── .env                        # Una sola fuente de verdad
+├── app.js                      # Une las rutas de ambos servicios
+└── server.js                   # Arranca el corazón del proyecto

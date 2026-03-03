@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.2.3",
+    "morgan": "^1.10.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.18.2",
+    "qrcode": "^1.5.4"
+  },
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Estrutura de las carpetas\r backend/\r ├── src/\r │   ├── api/                    # Punto de entrada de los servicios\r │   │   ├── auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)\r │   │   │   ├── controllers/\r │   │   │   ├── models/         # userModel.js\r │   │   │   └── routes/\r │   │   └── campus-service/     # DOMINIO: Cafetería y Market (NoSQL)\r │   │       ├── controllers/\r │   │       ├── models/         # productModel.js, orderModel.js\r │   │       └── routes/\r │   ├── config/                 # Configuraciones Globales\r │   │   ├── dbSql.js            # Conexión MySQL\r │   │   └── dbNoSql.js          # Conexión MongoDB\r │   ├── middlewares/            # Compartidos (Auth, Validaciones)\r │   │   ├── authMiddleware.js\r │   │   └── roleMiddleware.js\r │   ├── services/               # Lógica de negocio pesada o externa\r │   │   ├── mailService.js      # Para recuperar contraseña (SQL)\r │   │   └── qrService.js        # Para generar QRs (NoSQL)\r │   └── utils/                  # Helpers comunes\r ├── .env                        # Una sola fuente de verdad\r ├── app.js                      # Une las rutas de ambos servicios\r └── server.js                   # Arranca el corazón del proyecto",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
