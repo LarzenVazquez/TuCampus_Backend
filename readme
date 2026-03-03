@@ -1,26 +1,36 @@
-
-Estrutura de las carpetas
 backend/
 ├── src/
-│   ├── api/                    # Punto de entrada de los servicios
-│   │   ├── auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)
+│   ├── api/
+│   │   ├── auth-service/
 │   │   │   ├── controllers/
-│   │   │   ├── models/         # userModel.js
+│   │   │   │   └── authController.js
+│   │   │   ├── models/
+│   │   │   │   └── userModel.js
 │   │   │   └── routes/
-│   │   └── campus-service/     # DOMINIO: Cafetería y Market (NoSQL)
+│   │   │       └── authRoutes.js
+│   │   └── campus-service/
 │   │       ├── controllers/
-│   │       ├── models/         # productModel.js, orderModel.js
+│   │       │   ├── cafeController.js
+│   │       │   └── orderController.js
+│   │       ├── models/
+│   │       │   ├── orderModel.js
+│   │       │   └── productModel.js
 │   │       └── routes/
-│   ├── config/                 # Configuraciones Globales
-│   │   ├── dbSql.js            # Conexión MySQL
-│   │   └── dbNoSql.js          # Conexión MongoDB
-│   ├── middlewares/            # Compartidos (Auth, Validaciones)
-│   │   ├── authMiddleware.js
-│   │   └── roleMiddleware.js
-│   ├── services/               # Lógica de negocio pesada o externa
-│   │   ├── mailService.js      # Para recuperar contraseña (SQL)
-│   │   └── qrService.js        # Para generar QRs (NoSQL)
-│   └── utils/                  # Helpers comunes
-├── .env                        # Una sola fuente de verdad
-├── app.js                      # Une las rutas de ambos servicios
-└── server.js                   # Arranca el corazón del proyecto
+│   │           └── cafeRoutes.js
+│   ├── config/
+│   │   ├── dbNoSql.js
+│   │   └── dbSql.js
+│   ├── middlewares/
+│   │   └── authMiddleware.js
+│   ├── services/
+│   │   └── qrService.js
+│   └── utils/
+│       ├── formatter.js
+│       └── responseHandler.js
+├── .env
+├── .gitignore
+├── app.js
+├── package-lock.json
+├── package.json
+├── readme
+└── server.js
