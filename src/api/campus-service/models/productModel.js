@@ -6,11 +6,11 @@ const productSchema = new mongoose.Schema({
   precio: { type: Number, required: true },
   categoria: {
     type: String,
-    enum: ["comida", "bebida", "snack", "market"],
-    default: "comida",
+    enum: ["cafeteria", "marketplace", "comida", "bebida", "snack"],
+    default: "cafeteria",
   },
   stock: { type: Number, default: 0 },
-  imagen: { type: String }, // URL de la imagen
+  imagen: { type: String },
   disponible: { type: Boolean, default: true },
   fecha_creacion: { type: Date, default: Date.now },
 });

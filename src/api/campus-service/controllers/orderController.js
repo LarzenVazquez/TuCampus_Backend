@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const QrService = require("../../../services/qrService");
+const EmailService = require("../../../services/emailService");
 const {
   successResponse,
   errorResponse,
@@ -11,16 +12,18 @@ const createOrder = async (req, res) => {
   try {
     const { productos, metodo_pago } = req.body;
     const usuario_id = req.user.id;
+    const usuario_email = req.user.email;
     let totalCalculado = 0;
 
     for (let item of productos) {
       const producto = await Product.findById(item.producto_id);
-      if (!producto)
+      if (!producto) {
         return errorResponse(
           res,
           `Producto ${item.producto_id} no encontrado`,
           404,
         );
+      }
 
       item.precio_unitario = producto.precio;
       totalCalculado += producto.precio * item.cantidad;
@@ -36,9 +39,19 @@ const createOrder = async (req, res) => {
       total: totalCalculado,
       metodo_pago,
     });
+
     const ordenGuardada = await nuevaOrden.save();
 
-    successResponse(res, ordenGuardada, "Pedido procesado con éxito", 201);
+    if (usuario_email) {
+      await EmailService.sendOrderConfirmation(usuario_email, ordenGuardada);
+    }
+
+    successResponse(
+      res,
+      ordenGuardada,
+      "Pedido procesado y correo enviado con éxito",
+      201,
+    );
   } catch (error) {
     errorResponse(res, "Error al procesar pedido: " + error.message);
   }

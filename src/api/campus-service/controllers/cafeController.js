@@ -6,6 +6,7 @@ const {
 
 const getProducts = async (req, res) => {
   try {
+    // Solo productos que no han sido "borrados" lógicamente
     const products = await Product.find({ disponible: true });
     successResponse(res, products, "Productos obtenidos");
   } catch (error) {
@@ -15,7 +16,13 @@ const getProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    // IMPORTANTE: Vinculamos el producto con el ID de MySQL que viene en el token
+    const productData = {
+      ...req.body,
+      vendedor_id: req.user.id, // Usamos el 'id' de tu tabla 'users'
+    };
+
+    const newProduct = new Product(productData);
     const savedProduct = await newProduct.save();
     successResponse(res, savedProduct, "Producto creado con éxito", 201);
   } catch (error) {
@@ -25,7 +32,7 @@ const createProduct = async (req, res) => {
 
 const getProductsByCategory = async (req, res) => {
   try {
-    const { cat } = req.params;
+    const { cat } = req.params; // 'cafeteria' o 'marketplace'
     const products = await Product.find({ categoria: cat, disponible: true });
     successResponse(res, products, `Productos de la categoría ${cat}`);
   } catch (error) {
@@ -35,6 +42,7 @@ const getProductsByCategory = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
   try {
+    // Borrado lógico para no perder integridad en órdenes pasadas
     await Product.findByIdAndUpdate(req.params.id, { disponible: false });
     successResponse(res, null, "Producto eliminado del menú");
   } catch (error) {

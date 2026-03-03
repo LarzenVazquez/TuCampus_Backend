@@ -1,37 +1,43 @@
 const db = require("../../../config/dbSql");
 
 class User {
-  /* buscar usuario por email para validacion middleware */
+  /* buscar usuario por email */
   static async findByEmail(email) {
-    const [rows] = await db.execute("SELECT * FROM usuarios WHERE email = ?", [
+    // Cambiado: tabla 'users' y columna 'email'
+    const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [
       email,
     ]);
     return rows[0];
   }
 
   /* crear nuevo usuario */
-  static async create({ nombre, email, password, rol_id }) {
+  static async create({ nombre, email, password, rol }) {
+    // Cambiado: tabla 'users', columna 'password_hash' y 'rol'
     const [result] = await db.execute(
-      "INSERT INTO usuarios (nombre, email, password, rol_id) VALUES (?, ?, ?, ?)",
-      [nombre, email, password, rol_id || 2] /* estudiante usuario */,
+      "INSERT INTO users (nombre, email, password_hash, rol) VALUES (?, ?, ?, ?)",
+      [nombre, email, password, rol || "comprador"],
     );
     return result.insertId;
   }
 
-  // Obtener perfil por ID (para el middleware de auth)
+  /* Obtener perfil por ID */
   static async findById(id) {
+    // Cambiado: columna 'id' y tabla 'users'
     const [rows] = await db.execute(
-      "SELECT id_usuario, nombre, email, rol_id, fecha_registro FROM usuarios WHERE id_usuario = ?",
+      "SELECT id, nombre, email, rol, created_at FROM users WHERE id = ?",
       [id],
     );
     return rows[0];
   }
 
+  /* Actualizar perfil */
   static async updateProfile(id, { nombre, email }) {
-    await db.execute(
-      "UPDATE usuarios SET nombre = ?, email = ? WHERE id_usuario = ?",
-      [nombre, email, id],
-    );
+    // Cambiado: columna 'id'
+    await db.execute("UPDATE users SET nombre = ?, email = ? WHERE id = ?", [
+      nombre,
+      email,
+      id,
+    ]);
   }
 }
 
