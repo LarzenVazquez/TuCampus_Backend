@@ -6,11 +6,12 @@ const crypto = require("crypto");
 const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
-const { decryptRSA, getPublicKey } = require("../../../utils/cryptoHelper");
+/* ajuste de nombres segun tu cryptoHelper en minusculas */
+const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
 
 /* Llave Pública RSA para el cliente */
 const getPublicKeyEndpoint = (req, res) => {
-  res.json({ publicKey: getPublicKey() });
+  res.json({ publicKey: getpublickey() });
 };
 
 /* Registro con hashing Bcrypt */
@@ -46,7 +47,7 @@ const login = async (req, res) => {
     const { email, encryptedPassword, encryptedAesKey, iv } = req.body;
 
     /* Desencriptar la llave AES que viene protegida con RSA */
-    const aesKeyHex = decryptRSA(encryptedAesKey);
+    const aesKeyHex = decryptrsa(encryptedAesKey);
 
     /* Configurar el descifrador AES */
     const keyBytes = forge.util.hexToBytes(aesKeyHex);
@@ -75,6 +76,10 @@ const login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: "Credenciales incorrectas" });
 
+    /* buscar si el usuario ya tiene una foto de perfil en la base de datos */
+    const userFiles = await User.getUserFiles(user.id);
+    const fotoUrl = userFiles.length > 0 ? userFiles[0].url_archivo : null;
+
     /* Crear token JWT para la sesión */
     const token = jwt.sign(
       { id: user.id, rol: user.rol },
@@ -85,7 +90,12 @@ const login = async (req, res) => {
     res.json({
       status: "success",
       token,
-      user: { nombre: user.nombre, rol: user.rol, email: user.email },
+      user: {
+        nombre: user.nombre,
+        rol: user.rol,
+        email: user.email,
+        fotoUrl: fotoUrl,
+      },
     });
   } catch (error) {
     console.error("Error en servidor:", error.message);
@@ -116,9 +126,15 @@ const uploadSecureFile = async (req, res) => {
     /* Obtener API Key de ImgBB desde las variables de entorno */
     const IMGBB_KEY = process.env.IMGBB_API_KEY;
 
+    /* Corregido: Se agregaron los headers del form para evitar el error 400 */
     const imgbbRes = await axios.post(
       `https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,
       form,
+      {
+        headers: {
+          ...form.getHeaders(),
+        },
+      },
     );
     const remoteUrl = imgbbRes.data.data.url;
 
@@ -129,6 +145,7 @@ const uploadSecureFile = async (req, res) => {
       remoteUrl,
       fileHash,
     );
+
     fs.unlinkSync(req.file.path);
 
     res.json({
@@ -138,7 +155,14 @@ const uploadSecureFile = async (req, res) => {
       url: remoteUrl,
     });
   } catch (error) {
-    console.error("Error procesando archivo:", error.message);
+    /* Limpieza del archivo temporal en caso de error */
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    console.error(
+      "Error procesando archivo:",
+      error.response?.data || error.message,
+    );
     res.status(500).json({ message: "Error al subir la imagen" });
   }
 };
@@ -153,6 +177,26 @@ const logout = async (req, res) => {
     res.status(500).json({ message: "Error al cerrar sesión" });
   }
 };
+/* obtener perfil actualizado */
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findByEmail(req.user.email);
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const userFiles = await User.getUserFiles(user.id);
+    const fotoUrl = userFiles.length > 0 ? userFiles[0].url_archivo : null;
+
+    res.json({
+      nombre: user.nombre,
+      email: user.email,
+      rol: user.rol,
+      fotoUrl: fotoUrl,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener perfil" });
+  }
+};
 
 module.exports = {
   register,
@@ -160,4 +204,5 @@ module.exports = {
   logout,
   getPublicKeyEndpoint,
   uploadSecureFile,
+  getProfile,
 };

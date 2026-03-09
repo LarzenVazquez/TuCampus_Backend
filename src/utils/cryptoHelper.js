@@ -1,9 +1,10 @@
 const forge = require("node-forge");
 
 /* generacion de llaves rsa al arrancar el servidor */
-const { privatekey, publickey } = forge.pki.rsa.generatekeypair(2048);
-const publickeypem = forge.pki.publickeytopem(publickey);
-const privatekeypem = forge.pki.privatekeytopem(privatekey);
+const { privateKey: privatekey, publicKey: publickey } =
+  forge.pki.rsa.generateKeyPair(2048);
+const publickeypem = forge.pki.publicKeyToPem(publickey);
+const privatekeypem = forge.pki.privateKeyToPem(privatekey);
 
 module.exports = {
   /* obtener llave publica */
@@ -12,7 +13,7 @@ module.exports = {
   /* desifrar la llave aes que viene en rsa */
   decryptrsa: (encrypteddata64) => {
     try {
-      const privatekeyobj = forge.pki.privatekeyfrompem(privatekeypem);
+      const privatekeyobj = forge.pki.privateKeyFromPem(privatekeypem);
 
       /* decodificar base64 del cliente */
       const encryptedbytes = forge.util.decode64(encrypteddata64);
