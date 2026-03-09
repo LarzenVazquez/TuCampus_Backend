@@ -1,131 +1,48 @@
-#falta recuperacion de contraseñas y testear flujo y apis
-
-backend/
-├── src/
-│   ├── api/
-│   │   ├── auth-service/
-│   │   │   ├── controllers/
-│   │   │   │   └── authController.js
-│   │   │   ├── models/
-│   │   │   │   └── userModel.js
-│   │   │   └── routes/
-│   │   │       └── authRoutes.js
-│   │   └── campus-service/
-│   │       ├── controllers/
-│   │       │   ├── cafeController.js
-│   │       │   └── orderController.js
-│   │       ├── models/
-│   │       │   ├── orderModel.js
-│   │       │   └── productModel.js
-│   │       └── routes/
-│   │           └── cafeRoutes.js
-│   ├── config/
-│   │   ├── dbNoSql.js
-│   │   └── dbSql.js
-│   ├── middlewares/
-│   │   └── authMiddleware.js
-│   ├── services/
-│   │   └── qrService.js
-│   └── utils/
-│       ├── formatter.js
-│       └── responseHandler.js
-├── .env
-├── .gitignore
-├── app.js
-├── package-lock.json
-├── package.json
-├── readme
-└── server.js
-
-Creacion de base de datos
-CREATE DATABASE IF NOT EXISTS tucampus_sql;
+DROP DATABASE IF EXISTS tucampus_sql;
+CREATE DATABASE tucampus_sql;
 USE tucampus_sql;
 
--- 1. Tabla Principal: Usuarios
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     matricula VARCHAR(50) UNIQUE,
     rol ENUM('admin', 'staff', 'comprador', 'vendedor') DEFAULT 'comprador',
     es_vendedor_verificado TINYINT(1) DEFAULT 0,
-    foto_identificacion_url VARCHAR(255),
-    codigo_recuperacion VARCHAR(10),
-    token_auth_2fa VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    -- Índices para que el Login y las búsquedas vuelen
     INDEX (email),
     INDEX (rol)
-);
+) ENGINE=InnoDB;
 
--- 2. Tabla de Sesiones
+
+CREATE TABLE user_files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    url_archivo VARCHAR(255) NOT NULL,
+    file_hash VARCHAR(64) NOT NULL,
+    tipo_archivo VARCHAR(50),
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(500) NOT NULL,
     expira_en DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
--- 3. Tabla de Logs
 CREATE TABLE activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    accion VARCHAR(255),
+    accion VARCHAR(255) NOT NULL,
     descripcion TEXT,
+    ip_address VARCHAR(45),
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-);
-
-products (menu y marketplace)
-{
-  "_id": "65f123abc...", 
-  "nombre": "Torta de Milanesa",
-  "descripcion": "......",
-  "precio": 55.00,
-  "stock": 20,
-  "categoria": "Cafetería",
-  "vendedor_id": 1, // ID del Admin en MySQL
-  "disponible": true
-
-}
-
-orders
-{
-  "_id": "65f456def...",
-  "usuario_id": 10, // ID del Alumno en MySQL
-  "productos": [
-    {
-      "producto_id": "65f123abc...", // Referencia al ID de arriba
-      "cantidad": 1,
-      "precio_unitario": 55.00
-    }
-  ],
-  "total": 55.00,
-  "metodo_pago": "QR_Saldo",
-  "estado": "pendiente",
-  "fecha": "2023-10-27T10:00:00Z"
-}
-
-inventorylogs (auditoria)  
-
-{
-  "_id": "65f789ghi...",
-  "producto_id": "65f123abc...",
-  "cantidad": 1,
-  "tipo": "salida",
-  "motivo": "venta",
-  "fecha": "2023-10-27T10:05:00Z"
-}
-
-qrcodes (respaldo)
-{
-  "_id": "65f999jkl...",
-  "order_id": "65f456def...",
-  "qr_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",
-  "usado": false,
-  "fecha_creacion": "2023-10-27T10:00:05Z"
-}
+) ENGINE=InnoDB;
