@@ -8,12 +8,12 @@ const axios = require("axios");
 const FormData = require("form-data");
 const { decryptRSA, getPublicKey } = require("../../../utils/cryptoHelper");
 
-// Requisito B: Entrega de Llave Pública RSA
+/* llave Pública RSA*/
 const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getPublicKey() });
 };
 
-// Requisito A: Registro con Hashing Bcrypt (30 pts)
+/* registro con SHA bycript */
 const register = async (req, res) => {
   try {
     const { nombre, email, password, matricula } = req.body;
@@ -21,8 +21,8 @@ const register = async (req, res) => {
     if (existing)
       return res.status(400).json({ message: "Email ya registrado" });
 
-    const hashedPassword = await bcrypt.hash(password, 10); // Factor de trabajo 10
-
+    /* registro con SHA bycript */
+    const hashedPassword = await bcrypt.hash(password, 10);
     const userId = await User.create({
       nombre,
       email,
@@ -40,15 +40,15 @@ const register = async (req, res) => {
   }
 };
 
-// Requisito B: Login con Cifrado Híbrido RSA/AES (50 pts)
+/* Login con Cifrado Híbrido RSA/AES */
 const login = async (req, res) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv } = req.body;
 
-    // 1. Descifrar la llave AES que viene en RSA
+    /* desifrar la llave AES que viene en RSA */
     const aesKeyHex = decryptRSA(encryptedAesKey);
 
-    // 2. Configurar el descifrador AES
+    /* Desifrador AES */
     const keyBytes = forge.util.hexToBytes(aesKeyHex);
     const ivBytes = forge.util.hexToBytes(iv);
     const encryptedPassBytes = forge.util.decode64(encryptedPassword);
@@ -65,17 +65,17 @@ const login = async (req, res) => {
 
     const passwordPlana = decipher.output.toString();
 
-    // 3. Buscar usuario
+    /* Buscar usuario por medio del email */
     const user = await User.findByEmail(email);
     if (!user)
       return res.status(401).json({ message: "Usuario no encontrado" });
 
-    // 4. Comparar Bcrypt (Punto A)
+    /* comparar bycript */
     const isMatch = await bcrypt.compare(passwordPlana, user.password);
     if (!isMatch)
       return res.status(401).json({ message: "Contraseña incorrecta" });
 
-    // 5. JWT y Respuesta
+    /* Respuesta del JWT */
     const token = jwt.sign(
       { id: user.id, rol: user.rol },
       process.env.JWT_SECRET,
@@ -95,7 +95,7 @@ const login = async (req, res) => {
   }
 };
 
-// Requisito C: Subida de Archivo con Hash SHA-256 (20 pts)
+/* subir archivos con SHA-256 */
 const uploadSecureFile = async (req, res) => {
   try {
     if (!req.file)
@@ -103,20 +103,21 @@ const uploadSecureFile = async (req, res) => {
         .status(400)
         .json({ message: "No seleccionaste ningún archivo" });
 
-    // --- REQUISITO C: INTEGRIDAD (SHA-256) ---
+    /* crear el hash */
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileHash = crypto
       .createHash("sha256")
       .update(fileBuffer)
       .digest("hex");
 
-    // Impresión simple para validación en vivo solicitado
+    /* muestra en el servidor del archivo "hash" */
     console.log("SHA del archivo:", fileHash);
 
-    // --- INTEGRACIÓN IMGBB ---
+    /* imgbb para el almacenamiento de la imagen */
     const form = new FormData();
     form.append("image", fileBuffer.toString("base64"));
 
+    /* llave de img bb */
     const IMGBB_KEY = "e2caeade9fd380f7e9298cfba219a490";
     const imgbbRes = await axios.post(
       `https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,
