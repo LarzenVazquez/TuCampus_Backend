@@ -8,12 +8,12 @@ const axios = require("axios");
 const FormData = require("form-data");
 const { decryptRSA, getPublicKey } = require("../../../utils/cryptoHelper");
 
-/* llave Pública RSA*/
+/* Llave Pública RSA para el cliente */
 const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getPublicKey() });
 };
 
-/* registro con SHA bycript */
+/* Registro con hashing Bcrypt */
 const register = async (req, res) => {
   try {
     const { nombre, email, password, matricula } = req.body;
@@ -21,7 +21,7 @@ const register = async (req, res) => {
     if (existing)
       return res.status(400).json({ message: "Email ya registrado" });
 
-    /* registro con SHA bycript */
+    /* Encriptar contraseña con Bcrypt */
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = await User.create({
       nombre,
@@ -32,11 +32,11 @@ const register = async (req, res) => {
 
     res.status(201).json({
       status: "success",
-      message: "Usuario creado con Bcrypt",
+      message: "Usuario registrado con éxito",
       userId,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error en registro" });
+    res.status(500).json({ message: "Error al registrar usuario" });
   }
 };
 
@@ -45,10 +45,10 @@ const login = async (req, res) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv } = req.body;
 
-    /* desifrar la llave AES que viene en RSA */
+    /* Desencriptar la llave AES que viene protegida con RSA */
     const aesKeyHex = decryptRSA(encryptedAesKey);
 
-    /* Desifrador AES */
+    /* Configurar el descifrador AES */
     const keyBytes = forge.util.hexToBytes(aesKeyHex);
     const ivBytes = forge.util.hexToBytes(iv);
     const encryptedPassBytes = forge.util.decode64(encryptedPassword);
@@ -61,21 +61,21 @@ const login = async (req, res) => {
     if (!result)
       return res
         .status(400)
-        .json({ message: "Error al finalizar descifrado AES" });
+        .json({ message: "Error al descifrar la contraseña" });
 
     const passwordPlana = decipher.output.toString();
 
-    /* Buscar usuario por medio del email */
+    /* Buscar usuario en la base de datos */
     const user = await User.findByEmail(email);
     if (!user)
-      return res.status(401).json({ message: "Usuario no encontrado" });
+      return res.status(401).json({ message: "Credenciales incorrectas" });
 
-    /* comparar bycript */
+    /* Comparar contraseña plana contra el hash de la base de datos */
     const isMatch = await bcrypt.compare(passwordPlana, user.password);
     if (!isMatch)
-      return res.status(401).json({ message: "Contraseña incorrecta" });
+      return res.status(401).json({ message: "Credenciales incorrectas" });
 
-    /* Respuesta del JWT */
+    /* Crear token JWT para la sesión */
     const token = jwt.sign(
       { id: user.id, rol: user.rol },
       process.env.JWT_SECRET,
@@ -88,73 +88,69 @@ const login = async (req, res) => {
       user: { nombre: user.nombre, rol: user.rol, email: user.email },
     });
   } catch (error) {
-    console.error("LOG DE ERROR EN SERVIDOR:", error.message);
-    res
-      .status(500)
-      .json({ message: "Error en el login seguro", detail: error.message });
+    console.error("Error en servidor:", error.message);
+    res.status(500).json({ message: "Error al iniciar sesión" });
   }
 };
 
-/* subir archivos con SHA-256 */
+/* Subir archivos y generar hash SHA-256 */
 const uploadSecureFile = async (req, res) => {
   try {
     if (!req.file)
-      return res
-        .status(400)
-        .json({ message: "No seleccionaste ningún archivo" });
+      return res.status(400).json({ message: "No se subió ningún archivo" });
 
-    /* crear el hash */
+    /* Leer archivo y generar su huella digital SHA-256 */
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileHash = crypto
       .createHash("sha256")
       .update(fileBuffer)
       .digest("hex");
 
-    /* muestra en el servidor del archivo "hash" */
-    console.log("SHA del archivo:", fileHash);
+    /* Mostrar el hash en la consola del servidor */
+    console.log("Firma del archivo:", fileHash);
 
-    /* imgbb para el almacenamiento de la imagen */
+    /* Preparar imagen para mandarla a ImgBB */
     const form = new FormData();
     form.append("image", fileBuffer.toString("base64"));
 
-    /* llave de img bb */
-    const IMGBB_KEY = "e2caeade9fd380f7e9298cfba219a490";
+    /* Obtener API Key de ImgBB desde las variables de entorno */
+    const IMGBB_KEY = process.env.IMGBB_API_KEY;
+
     const imgbbRes = await axios.post(
       `https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,
       form,
     );
     const remoteUrl = imgbbRes.data.data.url;
 
-    // Registro en SQL con la URL de ImgBB y el Hash
+    /* Guardar en la base de datos la URL y el hash del archivo */
     await User.registerFileHash(
       req.user.id,
       req.file.originalname,
       remoteUrl,
       fileHash,
     );
-
-    // Borrar archivo temporal
     fs.unlinkSync(req.file.path);
 
     res.json({
       status: "success",
-      message: "Archivo verificado e integrado",
+      message: "Imagen subida y verificada",
       hash: fileHash,
       url: remoteUrl,
     });
   } catch (error) {
-    console.error("Error en Requisito C:", error.message);
-    res.status(500).json({ message: "Error al procesar el archivo" });
+    console.error("Error procesando archivo:", error.message);
+    res.status(500).json({ message: "Error al subir la imagen" });
   }
 };
 
+/* Cerrar sesión del usuario */
 const logout = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (token) await User.deleteSession(token);
     res.json({ message: "Sesión cerrada" });
   } catch (error) {
-    res.status(500).json({ message: "Error en logout" });
+    res.status(500).json({ message: "Error al cerrar sesión" });
   }
 };
 

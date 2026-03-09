@@ -1,22 +1,28 @@
 const forge = require("node-forge");
 
-// Generamos las llaves una sola vez al arrancar el server
-const { privateKey, publicKey } = forge.pki.rsa.generateKeyPair(2048);
-const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
-const privateKeyPem = forge.pki.privateKeyToPem(privateKey);
+/* generacion de llaves rsa al arrancar el servidor */
+const { privatekey, publickey } = forge.pki.rsa.generatekeypair(2048);
+const publickeypem = forge.pki.publickeytopem(publickey);
+const privatekeypem = forge.pki.privatekeytopem(privatekey);
 
 module.exports = {
-  getPublicKey: () => publicKeyPem,
-  decryptRSA: (encryptedData64) => {
+  /* obtener llave publica */
+  getpublickey: () => publickeypem,
+
+  /* desifrar la llave aes que viene en rsa */
+  decryptrsa: (encrypteddata64) => {
     try {
-      const privateKeyObj = forge.pki.privateKeyFromPem(privateKeyPem);
-      // Decodificamos el Base64 que viene del cliente
-      const encryptedBytes = forge.util.decode64(encryptedData64);
-      // Desciframos (Forge usa PKCS#1 v1.5 por defecto, igual que el cliente)
-      const decrypted = privateKeyObj.decrypt(encryptedBytes);
+      const privatekeyobj = forge.pki.privatekeyfrompem(privatekeypem);
+
+      /* decodificar base64 del cliente */
+      const encryptedbytes = forge.util.decode64(encrypteddata64);
+
+      /* descifrar con llave privada */
+      const decrypted = privatekeyobj.decrypt(encryptedbytes);
       return decrypted;
     } catch (err) {
-      console.error("Error FATAL en descifrado RSA:", err.message);
+      /* error en descifrado */
+      console.error("error fatal en descifrado rsa:", err.message);
       throw err;
     }
   },

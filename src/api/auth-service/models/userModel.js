@@ -1,43 +1,45 @@
 const db = require("../../../config/dbSql");
 
-const User = {
-  // Buscar por email para Login/Registro
-  findByEmail: async (email) => {
-    const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [
+/* modelo para gestionar usuarios en la base de datos */
+const user = {
+  /* buscar por medio del email */
+  findbyemail: async (email) => {
+    const [rows] = await db.execute("select * from users where email = ?", [
       email,
     ]);
     return rows[0];
   },
 
-  // Registro de usuario con password ya hasheado (Punto A)
-  create: async (userData) => {
-    const { nombre, email, password, matricula, rol } = userData;
+  /* registro con sha bycript */
+  create: async (userdata) => {
+    const { nombre, email, password, matricula, rol } = userdata;
     const [result] = await db.execute(
-      "INSERT INTO users (nombre, email, password, matricula, rol) VALUES (?, ?, ?, ?, ?)",
+      "insert into users (nombre, email, password, matricula, rol) values (?, ?, ?, ?, ?)",
       [nombre, email, password, matricula, rol || "comprador"],
     );
-    return result.insertId;
+    return result.insertid;
   },
 
-  // Manejo de Sesiones (Seguridad de estado)
-  createSession: async (userId, token, expiresAt) => {
+  /* crear sesion en tabla sessions */
+  createsession: async (userid, token, expiresat) => {
     await db.execute(
-      "INSERT INTO sessions (user_id, token, expira_en) VALUES (?, ?, ?)",
-      [userId, token, expiresAt],
+      "insert into sessions (user_id, token, expira_en) values (?, ?, ?)",
+      [userid, token, expiresat],
     );
   },
 
-  deleteSession: async (token) => {
-    await db.execute("DELETE FROM sessions WHERE token = ?", [token]);
+  /* eliminar sesion por token */
+  deletesession: async (token) => {
+    await db.execute("delete from sessions where token = ?", [token]);
   },
 
-  // Registro de Hash para integridad de archivos (Punto C)
-  registerFileHash: async (userId, fileName, path, hash) => {
+  /* registro de hash para integridad */
+  registerfilehash: async (userid, filename, path, hash) => {
     return await db.execute(
-      "INSERT INTO user_files (user_id, nombre_archivo, url_archivo, file_hash, tipo_archivo) VALUES (?, ?, ?, ?, ?)",
-      [userId, fileName, path, hash, "perfil"],
+      "insert into user_files (user_id, nombre_archivo, url_archivo, file_hash, tipo_archivo) values (?, ?, ?, ?, ?)",
+      [userid, filename, path, hash, "perfil"],
     );
   },
 };
 
-module.exports = User;
+module.exports = user;

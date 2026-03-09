@@ -6,12 +6,10 @@ const multer = require("multer");
 
 const upload = multer({ dest: "uploads/profiles/" });
 
-// Públicas
 router.get("/public-key", authController.getPublicKeyEndpoint);
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// Protegidas
 router.post("/logout", verifyToken, authController.logout);
 router.post(
   "/upload-identity",
