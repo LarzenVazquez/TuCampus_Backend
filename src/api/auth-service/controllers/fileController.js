@@ -5,7 +5,7 @@ const FileModel = require("../models/fileModel");
 /* Controlador para la gestión y validación de imágenes de perfil */
 const uploadProfileImage = async (req, res) => {
   try {
-    /* Verificación de existencia del archivo en la petición */
+    /* Verificación de existencia del archivo */
     if (!req.file) {
       return res
         .status(400)
@@ -31,14 +31,12 @@ const uploadProfileImage = async (req, res) => {
       "perfil",
     );
 
-    /* Respuesta exitosa con mensaje comercial estándar */
     res.status(200).json({
       status: "success",
       message: "Perfil actualizado correctamente",
     });
   } catch (error) {
-    /* Manejo de excepciones internas del servidor */
-    console.error("Error en uploadProfileImage:", error);
+    console.error("Error al subir la imagen:", error);
     res.status(500).json({ message: "Error al procesar la solicitud" });
   }
 };
