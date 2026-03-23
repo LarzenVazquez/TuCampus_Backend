@@ -6,7 +6,6 @@ const crypto = require("crypto");
 const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
-/* ajuste de nombres segun tu cryptoHelper en minusculas */
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
 
 /* Llave Pública RSA para el cliente */
