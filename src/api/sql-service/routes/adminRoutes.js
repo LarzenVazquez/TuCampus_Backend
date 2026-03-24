@@ -7,6 +7,6 @@ router.use(verifyToken, isAdmin);
 
 router.get("/users", adminController.getUsers);
 router.get("/logs", adminController.getLogs);
-router.patch("/verify-seller/:id", adminController.verifySeller);
+router.patch("/verify-seller/:id", adminController.updateUserStatus);
 
 module.exports = router;

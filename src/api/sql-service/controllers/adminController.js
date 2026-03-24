@@ -64,6 +64,19 @@ const adminController = {
       res.status(500).json({ message: "Error al eliminar usuario" });
     }
   },
+  verifySeller: async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.execute(
+        "UPDATE users SET es_vendedor_verificado = 1 WHERE id = ?",
+        [id],
+      );
+
+      res.json({ message: "Vendedor verificado correctamente" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al verificar vendedor" });
+    }
+  },
 };
 
 module.exports = adminController;

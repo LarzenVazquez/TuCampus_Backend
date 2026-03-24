@@ -108,6 +108,14 @@ const orderController = {
       res.status(500).json({ message: "Error al verificar" });
     }
   },
+  createPreference: async (req, res) => {
+    try {
+      // Tu lógica de Mercado Pago aquí
+      res.json({ id: "preferencia-generada" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al crear preferencia" });
+    }
+  },
 };
 
 module.exports = orderController;
