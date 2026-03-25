@@ -12,7 +12,6 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     req.user = decoded;
     next();
   } catch (error) {
@@ -20,6 +19,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+// Valida Admin General (Marketplace)
 const isAdmin = (req, res, next) => {
   if (req.user && req.user.rol === "admin") {
     next();
@@ -30,4 +30,15 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken, isAdmin };
+// NUEVO: Valida Admin de Cafetería
+const isAdminC = (req, res, next) => {
+  if (req.user && req.user.rol === "admin-c") {
+    next();
+  } else {
+    res
+      .status(403)
+      .json({ error: "Permisos insuficientes: Se requiere rol de Admin-C" });
+  }
+};
+
+module.exports = { verifyToken, isAdmin, isAdminC };

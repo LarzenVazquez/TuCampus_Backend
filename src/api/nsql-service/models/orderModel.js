@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  userId: { type: Number, required: true },
+  userId: { type: String, required: true },
   items: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
@@ -21,7 +21,12 @@ const orderSchema = new mongoose.Schema({
     enum: ["CARRITO", "PAGADO", "ENTREGADO", "CANCELADO"],
     default: "CARRITO",
   },
-  qrCodeData: { type: String, unique: true },
+  qrCodeData: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: null,
+  },
   fecha: { type: Date, default: Date.now },
 });
 

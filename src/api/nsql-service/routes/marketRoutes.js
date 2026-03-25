@@ -2,16 +2,22 @@ const express = require("express");
 const router = express.Router();
 const marketController = require("../controllers/marketController");
 const productController = require("../controllers/productController");
-const { verifyToken } = require("../../../middlewares/authMiddleware");
+// Importamos isAdmin para supervisión general
+const { verifyToken, isAdmin } = require("../../../middlewares/authMiddleware");
 
-// --- RUTAS PÚBLICAS ---
-router.get("/all", marketController.getMarketItems); // Ver todo el marketplace
-router.get("/items", productController.getProducts); // Ver productos generales
-router.get("/search", productController.searchProducts); // Buscador
+// --- RUTAS PÚBLICAS (Venta entre alumnos) ---
+router.get("/all", marketController.getMarketItems);
+// Buscador general o específico para marketplace
+router.get("/search", productController.searchProducts);
 
-// --- RUTAS PRIVADAS (Requieren Login) ---
-router.post("/publish", verifyToken, marketController.publishItem); // Publicar
-router.put("/edit/:id", verifyToken, productController.updateProduct); // Editar mi producto
-router.delete("/remove/:id", verifyToken, productController.deleteProduct); // Borrar mi producto
+// --- RUTAS PRIVADAS (Alumnos y Admin General) ---
+// Cualquier usuario logueado puede publicar sus cosas
+router.post("/publish", verifyToken, marketController.publishItem);
+
+// El dueño puede editar o el Admin General puede moderar
+router.put("/edit/:id", verifyToken, productController.updateProduct);
+
+// Solo el dueño o el Admin General pueden eliminar
+router.delete("/remove/:id", verifyToken, productController.deleteProduct);
 
 module.exports = router;

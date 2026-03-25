@@ -1,17 +1,27 @@
 const express = require("express");
 const router = express.Router();
-const marketController = require("../controllers/marketController");
 const productController = require("../controllers/productController");
-const { verifyToken } = require("../../../middlewares/authMiddleware");
+// Importamos isAdminC para la cafetería
+const {
+  verifyToken,
+  isAdminC,
+} = require("../../../middlewares/authMiddleware");
 
-// --- RUTAS PÚBLICAS ---
-router.get("/all", marketController.getMarketItems); // Ver todo el marketplace
-router.get("/items", productController.getProducts); // Ver productos generales
-router.get("/search", productController.searchProducts); // Buscador
+// --- RUTAS PÚBLICAS (Solo Cafetería) ---
+// El controlador ya filtra internamente por tipo: "Cafeteria"
+router.get("/items", productController.getProducts);
+router.get("/items/category/:cat", productController.getProductsByCategory);
+router.get("/search", productController.searchProducts);
 
-// --- RUTAS PRIVADAS (Requieren Login) ---
-router.post("/publish", verifyToken, marketController.publishItem); // Publicar
-router.put("/edit/:id", verifyToken, productController.updateProduct); // Editar mi producto
-router.delete("/remove/:id", verifyToken, productController.deleteProduct); // Borrar mi producto
+// --- RUTAS PRIVADAS (Solo Admin-C) ---
+// Cambiamos marketController por productController para centralizar la lógica de stock
+router.post("/publish", verifyToken, isAdminC, productController.createProduct);
+router.put("/edit/:id", verifyToken, isAdminC, productController.updateProduct);
+router.delete(
+  "/remove/:id",
+  verifyToken,
+  isAdminC,
+  productController.deleteProduct,
+);
 
 module.exports = router;

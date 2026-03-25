@@ -1,6 +1,7 @@
 const Product = require("../models/productModel");
 
 const productController = {
+  // Obtiene solo productos de Cafetería
   getProducts: async (req, res) => {
     try {
       const productos = await Product.find({ tipo: "Cafeteria" });
@@ -12,6 +13,7 @@ const productController = {
     }
   },
 
+  // Obtiene productos por categoría (Filtrado para Cafetería)
   getProductsByCategory: async (req, res) => {
     try {
       const { cat } = req.params;
@@ -25,9 +27,19 @@ const productController = {
     }
   },
 
+  // Crea productos asignando el tipo según el rol del admin
   createProduct: async (req, res) => {
     try {
-      const nuevoProducto = new Product(req.body);
+      // Determinamos el tipo basado en el rol del usuario que crea
+      const tipoAsignado =
+        req.user.rol === "admin-c" ? "Cafeteria" : "Marketplace";
+
+      const nuevoProducto = new Product({
+        ...req.body,
+        tipo: tipoAsignado,
+        vendedorId: req.user.id, // Importante para validar propiedad después
+      });
+
       await nuevoProducto.save();
       res
         .status(201)
@@ -39,15 +51,7 @@ const productController = {
     }
   },
 
-  deleteProduct: async (req, res) => {
-    try {
-      await Product.findByIdAndDelete(req.params.id);
-      res.status(200).json({ message: "Producto eliminado" });
-    } catch (error) {
-      res.status(500).json({ message: "Error al eliminar" });
-    }
-  },
-
+  // Buscador inteligente (Filtra por Cafetería)
   searchProducts: async (req, res) => {
     try {
       const { q } = req.query;
@@ -63,6 +67,7 @@ const productController = {
       res.status(500).json({ message: "Error en la búsqueda" });
     }
   },
+
   getProductById: async (req, res) => {
     try {
       const producto = await Product.findById(req.params.id);
@@ -74,6 +79,7 @@ const productController = {
     }
   },
 
+  // Actualización con permisos para ambos admin
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
@@ -81,7 +87,16 @@ const productController = {
 
       if (!producto) return res.status(404).json({ message: "No existe" });
 
-      if (producto.vendedorId !== req.user.id && req.user.rol !== "admin") {
+      // Lógica de permisos:
+      // 1. El dueño puede editar
+      // 2. Si es de cafetería, solo admin-c puede editar
+      // 3. Si es marketplace, admin general puede editar
+      const canEdit =
+        producto.vendedorId === req.user.id ||
+        (producto.tipo === "Cafeteria" && req.user.rol === "admin-c") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "admin");
+
+      if (!canEdit) {
         return res
           .status(403)
           .json({ message: "No tienes permiso para editar esto" });
@@ -96,14 +111,24 @@ const productController = {
     }
   },
 
+  // Eliminación con permisos para ambos admin
   deleteProduct: async (req, res) => {
     try {
       const producto = await Product.findById(req.params.id);
-      if (producto.vendedorId !== req.user.id && req.user.rol !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "No puedes borrar lo que no es tuyo" });
+      if (!producto)
+        return res.status(404).json({ message: "Producto no encontrado" });
+
+      const canDelete =
+        producto.vendedorId === req.user.id ||
+        (producto.tipo === "Cafeteria" && req.user.rol === "admin-c") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "admin");
+
+      if (!canDelete) {
+        return res.status(403).json({
+          message: "No puedes borrar lo que no es tuyo o no te corresponde",
+        });
       }
+
       await Product.findByIdAndDelete(req.params.id);
       res.json({ message: "Eliminado correctamente" });
     } catch (error) {

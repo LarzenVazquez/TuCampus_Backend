@@ -6,28 +6,36 @@ const orderController = {
   saveCart: async (req, res) => {
     try {
       const { items, total } = req.body;
+      const userId = req.user.id; // Asegúrate de que esto sea lo que llega del token
 
+      // Buscamos si el usuario ya tiene un carrito
       let cart = await Order.findOne({
-        userId: req.user.id,
+        userId: userId,
         status: "CARRITO",
       });
 
       if (cart) {
         cart.items = items;
         cart.total = total;
+        // No tocamos qrCodeData aquí, se queda como null
         await cart.save();
       } else {
         cart = new Order({
-          userId: req.user.id,
+          userId: userId,
           items,
           total,
           status: "CARRITO",
+          qrCodeData: null, // Definirlo explícitamente como null
         });
         await cart.save();
       }
-      res.status(200).json({ message: "Carrito actualizado", cart });
+
+      res.status(200).json({ message: "Carrito guardado", cart });
     } catch (error) {
-      res.status(500).json({ message: "Error al guardar carrito" });
+      console.error("ERROR EN SAVECART:", error);
+      res
+        .status(500)
+        .json({ message: "Error al guardar carrito", error: error.message });
     }
   },
 
