@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const crypto = require("crypto");
+const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const orderController = {
   saveCart: async (req, res) => {
@@ -118,12 +119,39 @@ const orderController = {
   },
   createPreference: async (req, res) => {
     try {
-      // Tu lógica de Mercado Pago aquí
-      res.json({ id: "preferencia-generada" });
+      // 1. Inicializar Mercado Pago con el token del .env
+      const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+      const preference = new Preference(client);
+
+      // 2. Transformar el carrito del frontend al formato de Mercado Pago
+      const items = req.body.items.map(item => ({
+        title: item.nombre,
+        unit_price: Number(item.precio),
+        quantity: Number(item.cantidad),
+        currency_id: 'MXN'
+      }));
+
+      // 3. Crear la preferencia y definir a dónde regresar tras el pago
+      const result = await preference.create({
+        body: {
+          items: items,
+          back_urls: {
+            success: "http://localhost:5173/store/confirmacion.html", 
+            failure: "http://localhost:5173/store/carrito.html",
+            pending: "http://localhost:5173/store/carrito.html"
+          },
+          // auto_return: "approved"
+        }
+      });
+
+      // 4. Devolver el ID al frontend
+      res.json({ id: result.id, url_pago: result.sandbox_init_point});
     } catch (error) {
-      res.status(500).json({ message: "Error al crear preferencia" });
+      console.error("Error en MP:", error);
+      res.status(500).json({ message: "Error al crear la preferencia de pago" });
     }
-  },
+  }
+
 };
 
 module.exports = orderController;

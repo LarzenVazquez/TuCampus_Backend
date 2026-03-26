@@ -13,6 +13,7 @@ router.get("/items", productController.getProducts);
 router.get("/items/category/:cat", productController.getProductsByCategory);
 router.get("/search", productController.searchProducts);
 
+
 // --- RUTAS PRIVADAS (Solo Admin-C) ---
 // Cambiamos marketController por productController para centralizar la lógica de stock
 router.post("/publish", verifyToken, isAdminC, productController.createProduct);
