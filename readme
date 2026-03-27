@@ -1,31 +1,33 @@
-bd
-CREATE DATABASE IF NOT EXISTS tucampus_sql;
+DROP DATABASE IF EXISTS tucampus_sql;
+CREATE DATABASE tucampus_sql;
 USE tucampus_sql;
 
--- 2. Tabla de USUARIOS 
+-- 1. TABLA DE USUARIOS
+-- Ajustamos el ENUM para usar: A, A_C, Al, A_V
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     matricula VARCHAR(50) UNIQUE,
-    rol ENUM('admin', 'staff', 'comprador', 'vendedor') DEFAULT 'comprador',
+    rol ENUM('A', 'A_C', 'Al', 'A_V') NOT NULL DEFAULT 'Al', --A: Administrador --A_C: Administrador_Cafeteria --Al: Alumno --A_V Alumno_Vendedor
     es_vendedor_verificado TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX (rol) -- Optimiza búsquedas por rol
+    INDEX idx_rol (rol) -- Índice para búsquedas rápidas por tipo de usuario
 );
 
--- 3. Tabla de SESIONES
+-- 2. TABLA DE SESIONES
 CREATE TABLE sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(500) NOT NULL,
     expira_en DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_session_user FOREIGN KEY (user_id) 
+        REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 4. Tabla de ARCHIVOS DE USUARIO 
+-- 3. TABLA DE ARCHIVOS 
 CREATE TABLE user_files (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -34,10 +36,11 @@ CREATE TABLE user_files (
     file_hash VARCHAR(64) NOT NULL,
     tipo_archivo VARCHAR(50),
     fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_files_user FOREIGN KEY (user_id) 
+        REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 5. Tabla de LOGS DE ACTIVIDAD 
+-- 4. TABLA DE LOGS 
 CREATE TABLE activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -45,5 +48,6 @@ CREATE TABLE activity_logs (
     descripcion TEXT,
     ip_address VARCHAR(45),
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+    CONSTRAINT fk_logs_user FOREIGN KEY (user_id) 
+        REFERENCES users(id) ON DELETE SET NULL
 );
