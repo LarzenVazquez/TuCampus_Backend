@@ -11,7 +11,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     matricula VARCHAR(50) UNIQUE,
     rol ENUM('A', 'A_C', 'Al', 'A_V') NOT NULL DEFAULT 'Al', --A: Administrador --A_C: Administrador_Cafeteria --Al: Alumno --A_V Alumno_Vendedor
-    es_vendedor_verificado TINYINT(1) DEFAULT 0,
+    vendedor_verificado TINYINT(1) DEFAULT 0,--0 No --1 Si
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_rol (rol) -- Índice para búsquedas rápidas por tipo de usuario

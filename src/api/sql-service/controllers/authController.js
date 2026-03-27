@@ -28,6 +28,8 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       matricula,
+      rol: "Al", // Se asegura el rol por defecto según la nueva BD
+      vendedor_verificado: 0, // Se asegura el estado inicial
     });
 
     res.status(201).json({
@@ -81,7 +83,7 @@ const login = async (req, res) => {
 
     /* Crear token JWT para la sesión */
     const token = jwt.sign(
-      { id: user.id, rol: user.rol },
+      { id: user.id, rol: user.rol }, // Ahora inyecta 'A', 'A_C', 'Al' o 'A_V'
       process.env.JWT_SECRET,
       { expiresIn: "24h" },
     );
@@ -91,9 +93,10 @@ const login = async (req, res) => {
       token,
       user: {
         nombre: user.nombre,
-        rol: user.rol,
+        rol: user.rol, // Devuelve la sigla para el Frontend
         email: user.email,
         fotoUrl: fotoUrl,
+        vendedor_verificado: user.vendedor_verificado, // Nueva columna incluida
       },
     });
   } catch (error) {
@@ -176,6 +179,7 @@ const logout = async (req, res) => {
     res.status(500).json({ message: "Error al cerrar sesión" });
   }
 };
+
 /* obtener perfil actualizado */
 const getProfile = async (req, res) => {
   try {
@@ -189,8 +193,9 @@ const getProfile = async (req, res) => {
     res.json({
       nombre: user.nombre,
       email: user.email,
-      rol: user.rol,
+      rol: user.rol, // Sigla actualizada (A, A_C, Al, A_V)
       fotoUrl: fotoUrl,
+      vendedor_verificado: user.vendedor_verificado,
     });
   } catch (error) {
     res.status(500).json({ message: "Error al obtener perfil" });

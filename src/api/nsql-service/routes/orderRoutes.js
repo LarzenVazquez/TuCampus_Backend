@@ -4,7 +4,6 @@ const orderController = require("../controllers/orderController");
 const { verifyToken, isAdmin } = require("../../../middlewares/authMiddleware");
 const { checkStock } = require("../../../middlewares/stockMiddleware");
 
-
 router.get("/cart", verifyToken, orderController.getCart);
 router.post("/cart", verifyToken, orderController.saveCart);
 
