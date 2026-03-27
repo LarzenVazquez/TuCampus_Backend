@@ -1,7 +1,21 @@
 const db = require("../../../config/dbSql");
 
 const User = {
-  // Buscar usuario por email
+  // Buscar usuario por ID (NECESARIO PARA EL PERFIL)
+  findById: async (id) => {
+    try {
+      const [rows] = await db.execute(
+        "SELECT id, nombre, email, password, matricula, rol, vendedor_verificado FROM users WHERE id = ?",
+        [id],
+      );
+      return rows[0];
+    } catch (error) {
+      console.error("Error en User.findById:", error.message);
+      throw error;
+    }
+  },
+
+  // Buscar usuario por email (Para el Login)
   findByEmail: async (email) => {
     try {
       const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [
@@ -14,7 +28,7 @@ const User = {
     }
   },
 
-  // Crear nuevo usuario (CORREGIDO: Rol por defecto 'Al')
+  // Crear nuevo usuario (Rol por defecto 'Al')
   create: async ({ nombre, email, password, matricula }) => {
     try {
       const [result] = await db.execute(

@@ -21,7 +21,8 @@ const verifyToken = (req, res, next) => {
 
 // Valida Admin General (Sigla: 'A')
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.rol === "A") {
+  // Usamos trim() por seguridad si el valor viene de la DB con espacios
+  if (req.user && req.user.rol.trim() === "A") {
     next();
   } else {
     res
@@ -30,14 +31,13 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-// Valida Admin de Cafetería (Sigla: 'A_C')
-// Nota: El Admin General ('A') también suele tener acceso aquí.
 const isAdminC = (req, res, next) => {
-  if (req.user && (req.user.rol === "A_C" || req.user.rol === "A")) {
+  const rol = req.user?.rol.trim();
+  if (req.user && (rol === "A_C" || rol === "A")) {
     next();
   } else {
     res.status(403).json({
-      error: "Acceso denegado: Solo para Administración de Cafetería",
+      error: "Acceso denegado: Solo para Administracion de Cafeteria",
     });
   }
 };

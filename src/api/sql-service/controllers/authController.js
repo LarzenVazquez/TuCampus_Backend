@@ -83,7 +83,7 @@ const login = async (req, res) => {
 
     /* Crear token JWT para la sesión */
     const token = jwt.sign(
-      { id: user.id, rol: user.rol }, // Ahora inyecta 'A', 'A_C', 'Al' o 'A_V'
+      { id: user.id, rol: user.rol, email: user.email }, // Ahora inyecta 'A', 'A_C', 'Al' o 'A_V'
       process.env.JWT_SECRET,
       { expiresIn: "24h" },
     );
@@ -183,9 +183,12 @@ const logout = async (req, res) => {
 /* obtener perfil actualizado */
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findByEmail(req.user.email);
-    if (!user)
+    // req.user.id viene del JWT decodificado por el middleware
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
     const userFiles = await User.getUserFiles(user.id);
     const fotoUrl = userFiles.length > 0 ? userFiles[0].url_archivo : null;
@@ -193,11 +196,12 @@ const getProfile = async (req, res) => {
     res.json({
       nombre: user.nombre,
       email: user.email,
-      rol: user.rol, // Sigla actualizada (A, A_C, Al, A_V)
+      rol: user.rol.trim(), // Limpieza de siglas (A, Al, A_V, A_C)
       fotoUrl: fotoUrl,
       vendedor_verificado: user.vendedor_verificado,
     });
   } catch (error) {
+    console.error("Error en controlador getProfile:", error.message);
     res.status(500).json({ message: "Error al obtener perfil" });
   }
 };
