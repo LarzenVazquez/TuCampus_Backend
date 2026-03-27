@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["CARRITO", "PAGADO", "ENTREGADO", "CANCELADO"],
+    enum: ["CARRITO", "PAGADO", "LISTO", "ENTREGADO", "CANCELADO"],
     default: "CARRITO",
   },
   qrCodeData: {

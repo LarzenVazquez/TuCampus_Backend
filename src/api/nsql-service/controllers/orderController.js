@@ -52,10 +52,11 @@ const orderController = {
     }
   },
 
-  checkout: async (req, res) => {
+checkout: async (req, res) => {
     try {
       const { metodoPago } = req.body;
 
+      // 1. Buscamos el carrito activo del usuario
       const cart = await Order.findOne({
         userId: req.user.id,
         status: "CARRITO",
@@ -67,33 +68,39 @@ const orderController = {
           .json({ message: "No tienes un carrito activo para pagar" });
       }
 
-      const pagoExitoso = true;
-
-      if (pagoExitoso) {
-        for (const item of cart.items) {
-          await Product.findByIdAndUpdate(item.productId, {
-            $inc: { stock: -item.cantidad },
-          });
-        }
-        const qrString = crypto
-          .createHash("sha256")
-          .update(`${req.user.id}-${Date.now()}-${cart.total}`)
-          .digest("hex");
-        cart.status = "PAGADO";
-        cart.metodoPago = metodoPago;
-        cart.qrCodeData = qrString;
-        await cart.save();
-
-        res.status(201).json({
-          status: "success",
-          message: "¡Pago exitoso y stock actualizado!",
-          qrData: qrString,
-          orderId: cart._id,
+      // 2. Descontamos el stock de la base de datos
+      for (const item of cart.items) {
+        await Product.findByIdAndUpdate(item.productId, {
+          $inc: { stock: -item.cantidad },
         });
       }
+
+      // 3. ✨ MAGIA: Generamos el código único del QR antes de guardar
+      // Esto evita que Mongoose lance el error "qrCodeData is required"
+      const qrString = "QR-" + crypto.randomBytes(6).toString("hex").toUpperCase();
+
+      // 4. Actualizamos el carrito para convertirlo en una orden pagada
+      cart.status = "PAGADO";
+      cart.metodoPago = metodoPago || "Mercado Pago";
+      cart.qrCodeData = qrString; 
+
+      // 5. Guardamos en la base de datos (Mongoose estará feliz)
+      await cart.save();
+
+      // 6. Respondemos al frontend con los datos exactos que necesita para la vista
+      res.status(201).json({
+        status: "success",
+        message: "¡Pago exitoso y stock actualizado!",
+        qrData: cart.qrCodeData,
+        orderId: cart._id,
+      });
+
     } catch (error) {
       console.error("Error en Checkout:", error);
-      res.status(500).json({ message: "Error en el proceso de pago" });
+      res.status(500).json({ 
+        message: "Error en el proceso de pago", 
+        error: error.message 
+      });
     }
   },
 
@@ -117,6 +124,19 @@ const orderController = {
       res.status(500).json({ message: "Error al verificar" });
     }
   },
+
+  getPaidOrders: async (req, res) => {
+    try {
+      // Buscamos las órdenes pagadas y las ordenamos por fecha (la más vieja primero, para que salga rápido)
+      const orders = await Order.find({ status: "PAGADO" }).sort({ fecha: 1 });
+      res.json(orders);
+    } catch (error) {
+      console.error("Error al obtener pedidos de cocina:", error);
+      res.status(500).json({ message: "Error al cargar la pantalla de cocina" });
+    }
+  },
+
+
   createPreference: async (req, res) => {
     try {
       // 1. Inicializar Mercado Pago con el token del .env
@@ -150,7 +170,30 @@ const orderController = {
       console.error("Error en MP:", error);
       res.status(500).json({ message: "Error al crear la preferencia de pago" });
     }
-  }
+  },
+
+  // Para la cocina: Cambia el estado a LISTO
+  markAsReady: async (req, res) => {
+    try {
+      const order = await Order.findByIdAndUpdate(req.params.id, { status: "LISTO" });
+      res.json({ message: "Orden lista para entregar", order });
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar la orden" });
+    }
+  },
+
+  // Para el alumno: Trae sus pedidos (el más reciente primero)
+  getMyOrders: async (req, res) => {
+    try {
+      const orders = await Order.find({ 
+        userId: req.user.id, 
+        status: { $ne: "CARRITO" } // Trae todo lo que no sea carrito
+      }).sort({ fecha: -1 });
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener historial" });
+    }
+  },
 
 };
 
