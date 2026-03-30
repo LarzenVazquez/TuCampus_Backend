@@ -2,6 +2,7 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const crypto = require("crypto");
 const { MercadoPagoConfig, Preference } = require('mercadopago');
+const baseURL = process.env.FRONTEND_URL;
 
 const orderController = {
   saveCart: async (req, res) => {
@@ -144,28 +145,33 @@ checkout: async (req, res) => {
       const preference = new Preference(client);
 
       // 2. Transformar el carrito del frontend al formato de Mercado Pago
-      const items = req.body.items.map(item => ({
-        title: item.nombre,
-        unit_price: Number(item.precio),
-        quantity: Number(item.cantidad),
-        currency_id: 'MXN'
-      }));
-
+const items = req.body.items.map(item => ({
+  title: item.nombre || "Producto",
+  unit_price: Number(item.precio) || 0,
+  quantity: Number(item.cantidad) || 1,
+  currency_id: 'MXN',
+  description: item.nombre || "Sin descripción"  // ← AGREGAR ESTO
+}));
+      
       // 3. Crear la preferencia y definir a dónde regresar tras el pago
       const result = await preference.create({
         body: {
           items: items,
-          back_urls: {
-            success: "http://localhost:5173/store/confirmacion.html", 
-            failure: "http://localhost:5173/store/carrito.html",
-            pending: "http://localhost:5173/store/carrito.html"
-          },
+         back_urls: {
+    success: `${baseURL}/store/confirmacion.html`, 
+    failure: `${baseURL}/store/carrito.html`,
+    pending: `${baseURL}/store/carrito.html`
+},
           // auto_return: "approved"
         }
       });
-
+console.log("✅ Preferencia creada:", {
+  id: result.id,
+  url_pago: result.init_point,
+  init_point: result.init_point
+});
       // 4. Devolver el ID al frontend
-      res.json({ id: result.id, url_pago: result.sandbox_init_point});
+      res.json({ id: result.id, url_pago: result.init_point});
     } catch (error) {
       console.error("Error en MP:", error);
       res.status(500).json({ message: "Error al crear la preferencia de pago" });

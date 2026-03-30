@@ -11,11 +11,11 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   total: { type: Number, required: true },
-  metodoPago: {
-    type: String,
-    enum: ["Tarjeta", "Transferencia"],
-    default: "Tarjeta",
-  },
+metodoPago: {
+  type: String,
+  enum: ["Tarjeta", "Transferencia", "Mercado Pago"],
+  default: "Mercado Pago",
+},
   status: {
     type: String,
     enum: ["CARRITO", "PAGADO", "LISTO", "ENTREGADO", "CANCELADO"],

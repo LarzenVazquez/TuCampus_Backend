@@ -3,6 +3,7 @@ const os = require("os");
 const dbSql = require("./src/config/dbSql");
 const dbNoSql = require("./src/config/dbNoSql");
 require("dotenv").config();
+app.set('trust proxy', 1);
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
