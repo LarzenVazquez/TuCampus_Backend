@@ -27,17 +27,16 @@ const productController = {
     }
   },
 
-  // Crea productos asignando el tipo según el rol del admin
+  // Crea productos asignando el tipo según el rol del admin (SIGLAS ACTUALIZADAS)
   createProduct: async (req, res) => {
     try {
-      // Determinamos el tipo basado en el rol del usuario que crea
-      const tipoAsignado =
-        req.user.rol === "admin-c" ? "Cafeteria" : "Marketplace";
+      // Determinamos el tipo basado en las nuevas siglas: A_C es Admin Cafetería
+      const tipoAsignado = req.user.rol === "A_C" ? "Cafeteria" : "Marketplace";
 
       const nuevoProducto = new Product({
         ...req.body,
         tipo: tipoAsignado,
-        vendedorId: req.user.id, // Importante para validar propiedad después
+        vendedorId: req.user.id,
       });
 
       await nuevoProducto.save();
@@ -79,7 +78,7 @@ const productController = {
     }
   },
 
-  // Actualización con permisos para ambos admin
+  // Actualización con permisos para ambos admin (SIGLAS ACTUALIZADAS)
   updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
@@ -87,14 +86,14 @@ const productController = {
 
       if (!producto) return res.status(404).json({ message: "No existe" });
 
-      // Lógica de permisos:
-      // 1. El dueño puede editar
-      // 2. Si es de cafetería, solo admin-c puede editar
-      // 3. Si es marketplace, admin general puede editar
+      // Lógica de permisos con siglas:
+      // 1. El dueño (Vendedor) puede editar
+      // 2. Si es de cafetería, solo 'A_C' puede editar
+      // 3. Si es marketplace, 'A' (Admin General) puede editar
       const canEdit =
         producto.vendedorId === req.user.id ||
-        (producto.tipo === "Cafeteria" && req.user.rol === "admin-c") ||
-        (producto.tipo === "Marketplace" && req.user.rol === "admin");
+        (producto.tipo === "Cafeteria" && req.user.rol === "A_C") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "A");
 
       if (!canEdit) {
         return res
@@ -111,7 +110,7 @@ const productController = {
     }
   },
 
-  // Eliminación con permisos para ambos admin
+  // Eliminación con permisos para ambos admin (SIGLAS ACTUALIZADAS)
   deleteProduct: async (req, res) => {
     try {
       const producto = await Product.findById(req.params.id);
@@ -120,8 +119,8 @@ const productController = {
 
       const canDelete =
         producto.vendedorId === req.user.id ||
-        (producto.tipo === "Cafeteria" && req.user.rol === "admin-c") ||
-        (producto.tipo === "Marketplace" && req.user.rol === "admin");
+        (producto.tipo === "Cafeteria" && req.user.rol === "A_C") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "A");
 
       if (!canDelete) {
         return res.status(403).json({

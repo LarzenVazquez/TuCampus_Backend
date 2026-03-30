@@ -1,23 +1,31 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/productController");
-// Importamos isAdminC para la cafetería
 const {
   verifyToken,
   isAdminC,
 } = require("../../../middlewares/authMiddleware");
 
 // --- RUTAS PÚBLICAS (Solo Cafetería) ---
-// El controlador ya filtra internamente por tipo: "Cafeteria"
+// Obtener todos los productos de la cafetería
 router.get("/items", productController.getProducts);
+
+// NUEVA RUTA: Obtener un producto específico por ID (Necesaria para editar)
+// Se coloca antes de las rutas con parámetros dinámicos para evitar conflictos
+router.get("/items/:id", productController.getProductById);
+
+// Obtener por categoría y búsqueda
 router.get("/items/category/:cat", productController.getProductsByCategory);
 router.get("/search", productController.searchProducts);
 
-
 // --- RUTAS PRIVADAS (Solo Admin-C) ---
-// Cambiamos marketController por productController para centralizar la lógica de stock
+// Publicar nuevo producto
 router.post("/publish", verifyToken, isAdminC, productController.createProduct);
+
+// Editar producto existente
 router.put("/edit/:id", verifyToken, isAdminC, productController.updateProduct);
+
+// Eliminar producto
 router.delete(
   "/remove/:id",
   verifyToken,
