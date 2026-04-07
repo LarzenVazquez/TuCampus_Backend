@@ -2,13 +2,33 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
-    nombre: { type: String, required: true },
-    descripcion: { type: String },
-    precio: { type: Number, required: true },
-    categoria: { type: String },
-    stock: { type: Number, default: 0 },
-    estado: { type: String, default: "DISPONIBLE" },
-    tipo: { type: String, default: "Cafeteria" },
+    nombre: {
+      type: String,
+      required: true,
+    },
+    descripcion: {
+      type: String,
+    },
+    precio: {
+      type: Number,
+      required: true,
+    },
+    categoria: {
+      type: String,
+    },
+    stock: {
+      type: Number,
+      default: 0,
+    },
+    estado: {
+      type: String,
+      enum: ["DISPONIBLE", "AGOTADO", "OCULTO"],
+      default: "DISPONIBLE",
+    },
+    tipo: {
+      type: String,
+      default: "Cafeteria",
+    },
     imagenUrl: {
       type: String,
       default:
@@ -17,6 +37,7 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: "products", // Asegura que ambos usen la misma tabla en MongoDB
   },
 );
 
