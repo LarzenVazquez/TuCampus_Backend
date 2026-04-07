@@ -7,11 +7,20 @@ const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
+const nodemailer = require("nodemailer");
 
 /* Llave Pública RSA para el cliente */
 const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getpublickey() });
 };
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 /* Registro con hashing Bcrypt */
 const register = async (req, res) => {
@@ -169,6 +178,36 @@ const uploadSecureFile = async (req, res) => {
   }
 };
 
+// Función para solicitar reseteo
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findByEmail(email); //
+    
+    // Por seguridad, siempre respondemos que se envió el correo, exista o no
+    if (!user) return res.json({ message: "Correo enviado si existe la cuenta." });
+
+    // Generar un token temporal aleatorio
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    // [Larzen: Aquí necesitas guardar 'resetToken' en la base de datos ligado a este usuario con una vigencia de 1 hora]
+    
+    const resetLink = `https://linnea-nonrepatriable-veronica.ngrok-free.dev/auth/reset-password.html?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "TuCampus - Recuperación de contraseña",
+      html: `<h2>Recuperación de contraseña</h2>
+             <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en 1 hora.</p>
+             <a href="${resetLink}">Restablecer mi contraseña</a>`
+    });
+
+    res.json({ message: "Correo enviado si existe la cuenta." });
+  } catch (error) {
+    res.status(500).json({ message: "Error procesando la solicitud." });
+  }
+};
+
 /* Cerrar sesión del usuario */
 const logout = async (req, res) => {
   try {
@@ -213,4 +252,5 @@ module.exports = {
   getPublicKeyEndpoint,
   uploadSecureFile,
   getProfile,
+  forgotPassword,
 };
