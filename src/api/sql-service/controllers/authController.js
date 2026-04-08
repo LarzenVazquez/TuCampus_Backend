@@ -6,13 +6,21 @@ const crypto = require("crypto");
 const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
-/* ajuste de nombres segun tu cryptoHelper en minusculas */
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
+const nodemailer = require("nodemailer");
 
 /* Llave Pública RSA para el cliente */
 const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getpublickey() });
 };
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 /* Registro con hashing Bcrypt */
 const register = async (req, res) => {
@@ -29,6 +37,8 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       matricula,
+      rol: "Al", // Se asegura el rol por defecto según la nueva BD
+      vendedor_verificado: 0, // Se asegura el estado inicial
     });
 
     res.status(201).json({
@@ -82,7 +92,7 @@ const login = async (req, res) => {
 
     /* Crear token JWT para la sesión */
     const token = jwt.sign(
-      { id: user.id, rol: user.rol },
+      { id: user.id, rol: user.rol, email: user.email }, // Ahora inyecta 'A', 'A_C', 'Al' o 'A_V'
       process.env.JWT_SECRET,
       { expiresIn: "24h" },
     );
@@ -92,9 +102,10 @@ const login = async (req, res) => {
       token,
       user: {
         nombre: user.nombre,
-        rol: user.rol,
+        rol: user.rol, // Devuelve la sigla para el Frontend
         email: user.email,
         fotoUrl: fotoUrl,
+        vendedor_verificado: user.vendedor_verificado, // Nueva columna incluida
       },
     });
   } catch (error) {
@@ -167,6 +178,36 @@ const uploadSecureFile = async (req, res) => {
   }
 };
 
+// Función para solicitar reseteo
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findByEmail(email); //
+    
+    // Por seguridad, siempre respondemos que se envió el correo, exista o no
+    if (!user) return res.json({ message: "Correo enviado si existe la cuenta." });
+
+    // Generar un token temporal aleatorio
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    // [Larzen: Aquí necesitas guardar 'resetToken' en la base de datos ligado a este usuario con una vigencia de 1 hora]
+    
+    const resetLink = `https://linnea-nonrepatriable-veronica.ngrok-free.dev/auth/reset-password.html?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "TuCampus - Recuperación de contraseña",
+      html: `<h2>Recuperación de contraseña</h2>
+             <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en 1 hora.</p>
+             <a href="${resetLink}">Restablecer mi contraseña</a>`
+    });
+
+    res.json({ message: "Correo enviado si existe la cuenta." });
+  } catch (error) {
+    res.status(500).json({ message: "Error procesando la solicitud." });
+  }
+};
+
 /* Cerrar sesión del usuario */
 const logout = async (req, res) => {
   try {
@@ -177,12 +218,16 @@ const logout = async (req, res) => {
     res.status(500).json({ message: "Error al cerrar sesión" });
   }
 };
+
 /* obtener perfil actualizado */
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findByEmail(req.user.email);
-    if (!user)
+    // req.user.id viene del JWT decodificado por el middleware
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
     const userFiles = await User.getUserFiles(user.id);
     const fotoUrl = userFiles.length > 0 ? userFiles[0].url_archivo : null;
@@ -190,10 +235,12 @@ const getProfile = async (req, res) => {
     res.json({
       nombre: user.nombre,
       email: user.email,
-      rol: user.rol,
+      rol: user.rol.trim(), // Limpieza de siglas (A, Al, A_V, A_C)
       fotoUrl: fotoUrl,
+      vendedor_verificado: user.vendedor_verificado,
     });
   } catch (error) {
+    console.error("Error en controlador getProfile:", error.message);
     res.status(500).json({ message: "Error al obtener perfil" });
   }
 };
@@ -205,4 +252,5 @@ module.exports = {
   getPublicKeyEndpoint,
   uploadSecureFile,
   getProfile,
+  forgotPassword,
 };
