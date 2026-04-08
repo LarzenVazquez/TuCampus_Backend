@@ -1,5 +1,5 @@
 const brain = require("brain.js");
-const Recommendation = require("../models/iaModel");
+const iaModel = require("../models/iaModel");
 const Product = require("../models/productModel");
 
 const net = new brain.NeuralNetwork({ hiddenLayers: [4, 4] });
