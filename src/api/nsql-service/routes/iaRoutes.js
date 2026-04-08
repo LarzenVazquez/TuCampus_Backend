@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const iaController = require("../Controllers/iaController");
+const iaController = require("../controllers/iaController");
 
 router.post("/train", iaController.train);
 router.get("/quick-buy", iaController.predict);
