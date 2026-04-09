@@ -246,7 +246,7 @@ const getProfile = async (req, res) => {
   }
 };
 
-exports.changePassword = async (req, res) => {
+const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
@@ -270,7 +270,7 @@ exports.changePassword = async (req, res) => {
 };
 
 // API: Restablecer contraseña (Valida token y actualiza)
-exports.resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
