@@ -90,6 +90,18 @@ const User = {
       throw error;
     }
   },
+  updatePassword: async (id, newPassword) => {
+    try {
+      const [result] = await db.execute(
+        "UPDATE users SET password = ? WHERE id = ?",
+        [newPassword, id],
+      );
+      return result;
+    } catch (error) {
+      console.error("Error en User.updatePassword:", error.message);
+      throw error;
+    }
+  },
 };
 
 module.exports = User;

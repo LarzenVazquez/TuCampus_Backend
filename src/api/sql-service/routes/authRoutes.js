@@ -25,5 +25,11 @@ router.post(
   upload.single("image"),
   authController.uploadSecureFile,
 );
+// Rutas para recuperación (Olvido)
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
+
+// Ruta para cambio manual (Logueado)
+router.put("/change-password", verifyToken, authController.changePassword);
 
 module.exports = router;

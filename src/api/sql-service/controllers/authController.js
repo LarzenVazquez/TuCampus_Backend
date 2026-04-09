@@ -183,14 +183,15 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findByEmail(email); //
-    
+
     // Por seguridad, siempre respondemos que se envió el correo, exista o no
-    if (!user) return res.json({ message: "Correo enviado si existe la cuenta." });
+    if (!user)
+      return res.json({ message: "Correo enviado si existe la cuenta." });
 
     // Generar un token temporal aleatorio
     const resetToken = crypto.randomBytes(32).toString("hex");
     // [Larzen: Aquí necesitas guardar 'resetToken' en la base de datos ligado a este usuario con una vigencia de 1 hora]
-    
+
     const resetLink = `https://linnea-nonrepatriable-veronica.ngrok-free.dev/auth/reset-password.html?token=${resetToken}`;
 
     await transporter.sendMail({
@@ -199,7 +200,7 @@ const forgotPassword = async (req, res) => {
       subject: "TuCampus - Recuperación de contraseña",
       html: `<h2>Recuperación de contraseña</h2>
              <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en 1 hora.</p>
-             <a href="${resetLink}">Restablecer mi contraseña</a>`
+             <a href="${resetLink}">Restablecer mi contraseña</a>`,
     });
 
     res.json({ message: "Correo enviado si existe la cuenta." });
@@ -245,6 +246,44 @@ const getProfile = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch)
+      return res
+        .status(401)
+        .json({ error: "La contraseña actual es incorrecta" });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.updatePassword(userId, hashed);
+
+    res.json({ message: "Contraseña actualizada con éxito" });
+  } catch (error) {
+    res.status(500).json({ error: "Error interno al cambiar contraseña" });
+  }
+};
+
+// API: Restablecer contraseña (Valida token y actualiza)
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.updatePassword(decoded.id, hashed);
+
+    res.json({ message: "Contraseña restablecida correctamente" });
+  } catch (error) {
+    res.status(400).json({ error: "Token inválido o expirado" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -253,4 +292,6 @@ module.exports = {
   uploadSecureFile,
   getProfile,
   forgotPassword,
+  changePassword,
+  resetPassword,
 };
