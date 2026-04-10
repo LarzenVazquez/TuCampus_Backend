@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const { verifyToken } = require("../../../middlewares/authMiddleware");
+const userController = require("../controllers/userController");
 
 // 1. Obtener perfil completo (incluye fotoUrl y vendedor_verificado)
 router.get("/profile", verifyToken, authController.getProfile);
