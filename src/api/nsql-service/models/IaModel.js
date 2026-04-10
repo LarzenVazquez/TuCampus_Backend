@@ -8,10 +8,11 @@ const recommendationSchema = new mongoose.Schema({
   },
   nombre_producto: { type: String, required: true },
   score_relevancia: { type: Number, required: true },
-  segmento_horario: {
-    type: String,
-    enum: ["mañana", "tarde", "noche"],
-    default: "mañana",
+  hora_prediccion: {
+    type: Number,
+    min: 0,
+    max: 23,
+    required: true,
   },
   ultima_actualizacion: { type: Date, default: Date.now },
 });
