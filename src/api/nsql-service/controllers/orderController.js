@@ -162,7 +162,7 @@ const items = req.body.items.map(item => ({
     failure: `${baseURL}/store/carrito.html`,
     pending: `${baseURL}/store/carrito.html`
 },
-          // auto_return: "approved"
+          auto_return: "approved"
         }
       });
 console.log("✅ Preferencia creada:", {

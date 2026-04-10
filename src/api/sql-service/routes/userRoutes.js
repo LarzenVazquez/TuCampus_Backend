@@ -5,6 +5,7 @@ const { verifyToken } = require("../../../middlewares/authMiddleware");
 
 // 1. Obtener perfil completo (incluye fotoUrl y vendedor_verificado)
 router.get("/profile", verifyToken, authController.getProfile);
+router.put('/profile', verifyToken, userController.updateProfile);
 
 // 2. Validación rápida de sesión
 // IMPORTANTE: req.user debe contener el { id, rol, email } extraído del JWT
