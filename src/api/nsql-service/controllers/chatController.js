@@ -74,6 +74,27 @@ const chatController = {
       res.status(500).json({ message: "Error al cargar chats" });
     }
   },
+  // Obtener un chat específico por su ID (Para abrirlo desde la bandeja de entrada)
+  getChatById: async (req, res) => {
+    try {
+      const { chat_id } = req.params;
+      const userId = req.user.id;
+
+      // Buscamos el chat y verificamos que el usuario sea parte de él (comprador o vendedor)
+      const chat = await Chat.findOne({
+        _id: chat_id,
+        $or: [{ comprador_id: userId }, { vendedor_id: userId }]
+      }).populate("producto_id", "titulo imagenes precio");
+
+      if (!chat) {
+        return res.status(404).json({ message: "Chat no encontrado o acceso denegado" });
+      }
+
+      res.json(chat);
+    } catch (error) {
+      res.status(500).json({ message: "Error al cargar el chat", error: error.message });
+    }
+  },
 };
 
 module.exports = chatController;
