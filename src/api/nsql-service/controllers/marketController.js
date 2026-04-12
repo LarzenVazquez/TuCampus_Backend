@@ -128,6 +128,28 @@ const marketController = {
       });
     }
   },
+  getPendingItems: async (req, res) => {
+    try {
+      const items = await Market.find({ estatus: "pendiente" }).sort({
+        fechaPublicacion: -1,
+      });
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al obtener productos pendientes",
+        error: error.message,
+      });
+    }
+  },
+  getMarketStats: async (req, res) => {
+    try {
+      const pendientes = await Market.countDocuments({ estatus: "pendiente" });
+      const activos = await Market.countDocuments({ estatus: "activo" });
+      res.json({ pendientes, activos });
+    } catch (error) {
+      res.status(500).json({ message: "Error en stats de market" });
+    }
+  },
 };
 
 module.exports = marketController;

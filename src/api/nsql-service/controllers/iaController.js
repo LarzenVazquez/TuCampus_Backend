@@ -20,31 +20,31 @@ const iaController = {
       if (productosDB.length === 0) {
         return res
           .status(404)
-          .json({ error: "No hay productos disponibles para entrenar" });
+          .json({ error: "No hay productos para entrenar" });
       }
 
       const trainingData = productosDB.map((p) => ({
         input: {
-          precio: p.precio / 100,
+          precio: p.precio / 500,
           stock: p.stock > 0 ? 1 : 0,
           horario: horaActual / 24,
         },
         output: { relevancia: p.stock > 0 ? 1 : 0 },
       }));
-      net.train(trainingData, { iterations: 2000, log: false });
+
+      net.train(trainingData, { iterations: 2000 });
 
       const resultados = [];
       for (const p of productosDB) {
         const output = net.run({
-          precio: p.precio / 100,
+          precio: p.precio / 500,
           stock: p.stock > 0 ? 1 : 0,
           horario: horaActual / 24,
         });
 
         const score = output.relevancia;
 
-        // Solo guardamos si la IA considera que es medianamente relevante
-        if (score > 0.4) {
+        if (score > 0.3) {
           await Recommendation.findOneAndUpdate(
             { producto_base_id: p._id, hora_prediccion: horaActual },
             {
@@ -66,7 +66,6 @@ const iaController = {
 
       res.json({
         status: "success",
-        message: "La Neurona ha sido actualizada",
         hora_entrenamiento: horaActual,
         items_procesados: resultados.length,
       });
@@ -87,10 +86,8 @@ const iaController = {
           },
         },
       ]);
-
       res.json({
         estado: "Operativo",
-        modelo: "FeedForward Neural Network (brain.js)",
         datos: stats[0] || { total: 0, ultimaActualizacion: "Sin datos" },
       });
     } catch (err) {
@@ -101,7 +98,7 @@ const iaController = {
   reset: async (req, res) => {
     try {
       await Recommendation.deleteMany({});
-      res.json({ status: "success", message: "Memoria de la IA limpiada" });
+      res.json({ status: "success" });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -115,11 +112,7 @@ const iaController = {
       })
         .sort({ score_relevancia: -1 })
         .limit(6);
-
-      res.json({
-        tipo: "Tendencias de la hora",
-        sugerencias,
-      });
+      res.json({ tipo: "Tendencias", sugerencias });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -128,10 +121,9 @@ const iaController = {
   ask: async (req, res) => {
     try {
       const { prompt } = req.query;
-      if (!prompt) return res.status(400).json({ error: "Escribe tu antojo" });
+      if (!prompt) return res.status(400).json({ error: "Vacío" });
 
       const horaActual = getMexicoHour();
-
       const numMatch = prompt.match(/\d+/);
       const presupuesto = numMatch ? parseInt(numMatch[0]) : 999;
 
@@ -153,19 +145,16 @@ const iaController = {
         query.categoria = { $in: tags.map((t) => new RegExp(t, "i")) };
       }
 
-      const resultados = await Recommendation.find(query)
+      const sugerencias = await Recommendation.find(query)
         .sort({ score_relevancia: -1 })
         .limit(4);
 
-      res.json({
-        tipo: "Análisis de la Neurona",
-        contexto: { presupuesto, categorias: tags },
-        sugerencias: resultados,
-      });
+      res.json({ sugerencias });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   },
+
   registerFeedback: async (req, res) => {
     try {
       const { id, accion } = req.body;
@@ -173,7 +162,6 @@ const iaController = {
         accion === "venta"
           ? { $inc: { ventas_vinculadas: 1 } }
           : { $inc: { clics_interaccion: 1 } };
-
       await Recommendation.findByIdAndUpdate(id, update);
       res.json({ status: "success" });
     } catch (err) {
