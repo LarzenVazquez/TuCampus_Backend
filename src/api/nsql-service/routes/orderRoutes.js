@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const orderController = require("../controllers/orderController");
-const { verifyToken, isAdmin } = require("../../../middlewares/authMiddleware");
+const {
+  verifyToken,
+  isAdmin,
+  isAdminC,
+} = require("../../../middlewares/authMiddleware");
 const { checkStock } = require("../../../middlewares/stockMiddleware");
 
 router.get("/cart", verifyToken, orderController.getCart);
@@ -21,4 +25,6 @@ router.post(
   orderController.createPreference,
 );
 
+// Esta línea debe coincidir con lo que pide el apiservices.js
+router.get("/stats", verifyToken, isAdminC, orderController.getGlobalStats);
 module.exports = router;

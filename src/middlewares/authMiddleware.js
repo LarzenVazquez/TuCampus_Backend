@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
 
+/**
+ * Verifica si el token JWT es válido
+ */
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -19,38 +22,52 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Valida Admin General (Sigla: 'A')
+/**
+ * Valida Admin General (Sigla: 'A')
+ */
 const isAdmin = (req, res, next) => {
-  // Usamos trim() por seguridad si el valor viene de la DB con espacios
   if (req.user && req.user.rol.trim() === "A") {
     next();
   } else {
-    res
-      .status(403)
-      .json({ error: "Permisos insuficientes: Se requiere rol Admin (A)" });
-  }
-};
-
-const isAdminC = (req, res, next) => {
-  const rol = req.user?.rol.trim();
-  if (req.user && (rol === "A_C" || rol === "A")) {
-    next();
-  } else {
     res.status(403).json({
-      error: "Acceso denegado: Solo para Administracion de Cafeteria",
+      error: "Permisos insuficientes: Se requiere rol Admin Maestro (A)",
     });
   }
 };
 
-// Valida si es Vendedor Verificado (Sigla: 'A_V') o Admin
-const isSeller = (req, res, next) => {
-  if (req.user && (req.user.rol === "A_V" || req.user.rol === "A")) {
+/**
+ * Valida Admin de Cafetería (Sigla: 'A_C') o Admin General (Sigla: 'A')
+ */
+const isAdminC = (req, res, next) => {
+  const rol = req.user?.rol?.trim();
+  if (req.user && (rol === "A" || rol === "A_C")) {
     next();
   } else {
-    res
-      .status(403)
-      .json({ error: "Debes ser un vendedor verificado para publicar" });
+    res.status(403).json({
+      message: "Acceso denegado: Se requiere rol administrativo o de cocina.",
+    });
   }
 };
 
-module.exports = { verifyToken, isAdmin, isAdminC, isSeller };
+/**
+ * Valida si es Vendedor Verificado (Sigla: 'A_V') o Admin Maestro (Sigla: 'A')
+ */
+const isSeller = (req, res, next) => {
+  const rol = req.user?.rol?.trim();
+  if (req.user && (rol === "A_V" || rol === "A")) {
+    next();
+  } else {
+    res.status(403).json({
+      error:
+        "Acceso denegado: Debes ser un vendedor verificado o administrador",
+    });
+  }
+};
+
+// EXPORTACIÓN COMPLETA - Esto evita el error "isSeller is not defined" en iaRoutes
+module.exports = {
+  verifyToken,
+  isAdmin,
+  isAdminC,
+  isSeller,
+};

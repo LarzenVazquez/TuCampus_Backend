@@ -1,7 +1,8 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
+const mongoose = require("mongoose");
 const crypto = require("crypto");
-const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { MercadoPagoConfig, Preference } = require("mercadopago");
 const baseURL = process.env.FRONTEND_URL;
 
 const orderController = {
@@ -53,7 +54,7 @@ const orderController = {
     }
   },
 
-checkout: async (req, res) => {
+  checkout: async (req, res) => {
     try {
       const { metodoPago } = req.body;
 
@@ -78,12 +79,13 @@ checkout: async (req, res) => {
 
       // 3. ✨ MAGIA: Generamos el código único del QR antes de guardar
       // Esto evita que Mongoose lance el error "qrCodeData is required"
-      const qrString = "QR-" + crypto.randomBytes(6).toString("hex").toUpperCase();
+      const qrString =
+        "QR-" + crypto.randomBytes(6).toString("hex").toUpperCase();
 
       // 4. Actualizamos el carrito para convertirlo en una orden pagada
       cart.status = "PAGADO";
       cart.metodoPago = metodoPago || "Mercado Pago";
-      cart.qrCodeData = qrString; 
+      cart.qrCodeData = qrString;
 
       // 5. Guardamos en la base de datos (Mongoose estará feliz)
       await cart.save();
@@ -95,12 +97,11 @@ checkout: async (req, res) => {
         qrData: cart.qrCodeData,
         orderId: cart._id,
       });
-
     } catch (error) {
       console.error("Error en Checkout:", error);
-      res.status(500).json({ 
-        message: "Error en el proceso de pago", 
-        error: error.message 
+      res.status(500).json({
+        message: "Error en el proceso de pago",
+        error: error.message,
       });
     }
   },
@@ -133,55 +134,62 @@ checkout: async (req, res) => {
       res.json(orders);
     } catch (error) {
       console.error("Error al obtener pedidos de cocina:", error);
-      res.status(500).json({ message: "Error al cargar la pantalla de cocina" });
+      res
+        .status(500)
+        .json({ message: "Error al cargar la pantalla de cocina" });
     }
   },
-
 
   createPreference: async (req, res) => {
     try {
       // 1. Inicializar Mercado Pago con el token del .env
-      const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+      const client = new MercadoPagoConfig({
+        accessToken: process.env.MP_ACCESS_TOKEN,
+      });
       const preference = new Preference(client);
 
       // 2. Transformar el carrito del frontend al formato de Mercado Pago
-const items = req.body.items.map(item => ({
-  title: item.nombre || "Producto",
-  unit_price: Number(item.precio) || 0,
-  quantity: Number(item.cantidad) || 1,
-  currency_id: 'MXN',
-  description: item.nombre || "Sin descripción"  // ← AGREGAR ESTO
-}));
-      
+      const items = req.body.items.map((item) => ({
+        title: item.nombre || "Producto",
+        unit_price: Number(item.precio) || 0,
+        quantity: Number(item.cantidad) || 1,
+        currency_id: "MXN",
+        description: item.nombre || "Sin descripción", // ← AGREGAR ESTO
+      }));
+
       // 3. Crear la preferencia y definir a dónde regresar tras el pago
       const result = await preference.create({
         body: {
           items: items,
-         back_urls: {
-    success: `${baseURL}/store/confirmacion.html`, 
-    failure: `${baseURL}/store/carrito.html`,
-    pending: `${baseURL}/store/carrito.html`
-},
-          auto_return: "approved"
-        }
+          back_urls: {
+            success: `${baseURL}/store/confirmacion.html`,
+            failure: `${baseURL}/store/carrito.html`,
+            pending: `${baseURL}/store/carrito.html`,
+          },
+          auto_return: "approved",
+        },
       });
-console.log("✅ Preferencia creada:", {
-  id: result.id,
-  url_pago: result.init_point,
-  init_point: result.init_point
-});
+      console.log("✅ Preferencia creada:", {
+        id: result.id,
+        url_pago: result.init_point,
+        init_point: result.init_point,
+      });
       // 4. Devolver el ID al frontend
-      res.json({ id: result.id, url_pago: result.init_point});
+      res.json({ id: result.id, url_pago: result.init_point });
     } catch (error) {
       console.error("Error en MP:", error);
-      res.status(500).json({ message: "Error al crear la preferencia de pago" });
+      res
+        .status(500)
+        .json({ message: "Error al crear la preferencia de pago" });
     }
   },
 
   // Para la cocina: Cambia el estado a LISTO
   markAsReady: async (req, res) => {
     try {
-      const order = await Order.findByIdAndUpdate(req.params.id, { status: "LISTO" });
+      const order = await Order.findByIdAndUpdate(req.params.id, {
+        status: "LISTO",
+      });
       res.json({ message: "Orden lista para entregar", order });
     } catch (error) {
       res.status(500).json({ message: "Error al actualizar la orden" });
@@ -191,16 +199,59 @@ console.log("✅ Preferencia creada:", {
   // Para el alumno: Trae sus pedidos (el más reciente primero)
   getMyOrders: async (req, res) => {
     try {
-      const orders = await Order.find({ 
-        userId: req.user.id, 
-        status: { $ne: "CARRITO" } // Trae todo lo que no sea carrito
+      const orders = await Order.find({
+        userId: req.user.id,
+        status: { $ne: "CARRITO" }, // Trae todo lo que no sea carrito
       }).sort({ fecha: -1 });
       res.json(orders);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener historial" });
     }
   },
+  getGlobalStats: async (req, res) => {
+    try {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
 
+      // Ejecutamos consultas en paralelo para velocidad
+      const [pedidosHoy, ingresos, stockBajo, marketPendiente] =
+        await Promise.all([
+          // 1. Conteo de pedidos hoy (PAGADOS o LISTOS)
+          Order.countDocuments({
+            fecha: { $gte: hoy },
+            status: { $in: ["PAGADO", "LISTO", "ENTREGADO"] },
+          }),
+
+          // 2. Suma de ingresos totales (Solo pedidos finalizados o pagados)
+          Order.aggregate([
+            { $match: { status: { $in: ["PAGADO", "LISTO", "ENTREGADO"] } } },
+            { $group: { _id: null, total: { $sum: "$total" } } },
+          ]),
+
+          // 3. Productos con poco stock (Requiere modelo Product)
+          Product.countDocuments({ stock: { $lt: 5 } }),
+
+          // 4. Items del Market esperando aprobación (Si aplica)
+          // Sustituye 'Market' por tu modelo real de marketplace si es distinto
+          mongoose
+            .model("Market")
+            .countDocuments({ estado: "PENDIENTE" })
+            .catch(() => 0),
+        ]);
+
+      res.json({
+        pedidosHoy,
+        ingresosTotales: ingresos[0]?.total || 0,
+        stockBajo,
+        marketPendiente,
+      });
+    } catch (error) {
+      console.error("Error en getGlobalStats:", error);
+      res
+        .status(500)
+        .json({ message: "Error al obtener estadísticas de operación" });
+    }
+  },
 };
 
 module.exports = orderController;

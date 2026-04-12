@@ -48,12 +48,10 @@ const adminController = {
     }
   },
 
-  // 3. Verificar Vendedor y cambiar rol a A_V automáticamente
   verifySeller: async (req, res) => {
     try {
       const { id } = req.params;
 
-      // Al verificar, lo promovemos a Alumno Vendedor (A_V)
       await db.execute(
         "UPDATE users SET vendedor_verificado = 1, rol = 'A_V' WHERE id = ?",
         [id],
@@ -72,7 +70,6 @@ const adminController = {
     }
   },
 
-  // 4. Logs y Delete (Se mantienen igual, solo corregimos consistencia)
   getLogs: async (req, res) => {
     try {
       const [logs] = await db.execute(
@@ -98,6 +95,20 @@ const adminController = {
       res.json({ message: "Usuario eliminado del sistema" });
     } catch (error) {
       res.status(500).json({ message: "Error al eliminar usuario" });
+    }
+  },
+  getStats: async (req, res) => {
+    try {
+      // Cuenta cuántos usuarios hay en tu base de datos MySQL
+      const [rows] = await db.execute(
+        "SELECT COUNT(*) as usuariosTotal FROM users",
+      );
+      res.json(rows[0]);
+    } catch (error) {
+      console.error("Error en getStats Backend:", error);
+      res
+        .status(500)
+        .json({ message: "Error al obtener estadísticas de MySQL" });
     }
   },
 };

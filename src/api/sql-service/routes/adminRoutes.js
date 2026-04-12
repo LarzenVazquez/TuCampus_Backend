@@ -23,4 +23,6 @@ router.patch("/verify-seller/:id", adminController.verifySeller);
 // Eliminar usuario
 router.delete("/user/:id", adminController.deleteUser);
 
+router.get("/stats", adminController.getStats);
+
 module.exports = router;
