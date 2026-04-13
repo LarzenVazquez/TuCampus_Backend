@@ -7,29 +7,14 @@ const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
-const nodemailer = require("nodemailer");
 
 /* Llave Pública RSA para el cliente */
 const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getpublickey() });
 };
 
-// Configuración corregida para evitar el error ENETUNREACH en Railway
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, 
-  },
-  tls: {
-    rejectUnauthorized: false 
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* Registro con hashing Bcrypt */
 const register = async (req, res) => {
@@ -266,9 +251,8 @@ const forgotPassword = async (req, res) => {
     );
 
     const resetLink = `https://tucampus.vercel.app/reset-password.html?token=${resetToken}`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: 'TuCampus <onboarding@resend.dev>', // Este correo te lo da Resend gratis para pruebas
       to: email,
       subject: "TuCampus - Recuperación de contraseña",
       html: `<h2>Recuperación de contraseña</h2>
