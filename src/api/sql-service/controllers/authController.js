@@ -13,8 +13,8 @@ const getPublicKeyEndpoint = (req, res) => {
   res.json({ publicKey: getpublickey() });
 };
 
-const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /* Registro con hashing Bcrypt */
 const register = async (req, res) => {
@@ -251,15 +251,17 @@ const forgotPassword = async (req, res) => {
     );
 
     const resetLink = `https://tucampus.vercel.app/reset-password.html?token=${resetToken}`;
-    await resend.emails.send({
-      from: 'TuCampus <onboarding@resend.dev>', // Este correo te lo da Resend gratis para pruebas
+const msg = {
       to: email,
+      from: 'tucampus.uteq@gmail.com', // Asegúrate de que este correo esté verificado en SendGrid
       subject: "TuCampus - Recuperación de contraseña",
       html: `<h2>Recuperación de contraseña</h2>
              <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en exactamente 1 hora.</p>
              <br>
-             <a href="${resetLink}" style="padding: 10px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 5px;">Restablecer mi contraseña</a>`,
-    });
+             <a href="${resetLink}" style="padding: 10px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 5px;">Restablecer mi contraseña</a>`
+    };
+
+    await sgMail.send(msg);
 
     res.json({ message: "Correo enviado si existe la cuenta." });
   } catch (error) {
