@@ -72,7 +72,7 @@ const User = {
   verifyEmail: async (email) => {
 
     const sql = "UPDATE users SET email_verificado = 1 WHERE email = ?";
-    const [result] = await pool.query(sql, [email]);
+    const [result] = await db.execute(sql, [email]);
     return result;
   },
 
