@@ -178,36 +178,6 @@ const uploadSecureFile = async (req, res) => {
   }
 };
 
-// Función para solicitar reseteo
-const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findByEmail(email); //
-
-    // Por seguridad, siempre respondemos que se envió el correo, exista o no
-    if (!user)
-      return res.json({ message: "Correo enviado si existe la cuenta." });
-
-    // Generar un token temporal aleatorio
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    // [Larzen: Aquí necesitas guardar 'resetToken' en la base de datos ligado a este usuario con una vigencia de 1 hora]
-
-    const resetLink = `https://linnea-nonrepatriable-veronica.ngrok-free.dev/auth/reset-password.html?token=${resetToken}`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "TuCampus - Recuperación de contraseña",
-      html: `<h2>Recuperación de contraseña</h2>
-             <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en 1 hora.</p>
-             <a href="${resetLink}">Restablecer mi contraseña</a>`,
-    });
-
-    res.json({ message: "Correo enviado si existe la cuenta." });
-  } catch (error) {
-    res.status(500).json({ message: "Error procesando la solicitud." });
-  }
-};
 
 /* Cerrar sesión del usuario */
 const logout = async (req, res) => {
@@ -269,17 +239,57 @@ const changePassword = async (req, res) => {
   }
 };
 
+// Función para solicitar reseteo
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findByEmail(email);
+
+    // Por seguridad, siempre respondemos que se envió el correo, exista o no
+    if (!user)
+      return res.json({ message: "Correo enviado si existe la cuenta." });
+
+    // LA SOLUCIÓN: Generar un JWT real que expira en 1 hora, llevando oculto el ID del usuario
+    const resetToken = jwt.sign(
+      { id: user.id }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
+
+    const resetLink = `https://tucampus.vercel.app/reset-password.html?token=${resetToken}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "TuCampus - Recuperación de contraseña",
+      html: `<h2>Recuperación de contraseña</h2>
+             <p>Haz clic en el siguiente enlace para crear una nueva contraseña. Este enlace expira en exactamente 1 hora.</p>
+             <br>
+             <a href="${resetLink}" style="padding: 10px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 5px;">Restablecer mi contraseña</a>`,
+    });
+
+    res.json({ message: "Correo enviado si existe la cuenta." });
+  } catch (error) {
+    console.error("Error enviando correo de recuperación:", error);
+    res.status(500).json({ message: "Error procesando la solicitud." });
+  }
+};
+
 // API: Restablecer contraseña (Valida token y actualiza)
 const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
+    
+    // Ahora sí, esto funcionará porque el token que enviamos al correo ES un JWT válido
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Hasheamos la nueva contraseña y actualizamos usando el ID que venía oculto en el token
     const hashed = await bcrypt.hash(newPassword, 10);
     await User.updatePassword(decoded.id, hashed);
 
     res.json({ message: "Contraseña restablecida correctamente" });
   } catch (error) {
+    console.error("Error al resetear contraseña:", error.message);
     res.status(400).json({ error: "Token inválido o expirado" });
   }
 };
