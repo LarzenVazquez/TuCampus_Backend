@@ -74,10 +74,9 @@ const verifyEmail = async (req, res) => {
 
     // Desencriptar token para saber qué correo es
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // LARZEN: Aquí debes hacer un UPDATE a tu base de datos para cambiar el estatus
-    // Ejemplo ficticio: await User.update({ email_verificado: 1 }, { where: { email: decoded.email }});
     
+    await User.verifyEmail(decoded.email); 
+
     res.json({ message: "¡Correo verificado exitosamente!" });
   } catch (error) {
     res.status(400).json({ error: "El enlace expiró o es inválido." });
