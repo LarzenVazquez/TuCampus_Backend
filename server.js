@@ -1,6 +1,7 @@
+//server.js 
 const app = require("./app");
-const http = require("http"); // Requerido para Socket.io
-const { Server } = require("socket.io"); // La librería que instalaste
+const http = require("http");
+const { Server } = require("socket.io"); 
 const os = require("os");
 const cron = require("node-cron");
 const dbSql = require("./src/config/dbSql");
@@ -16,10 +17,13 @@ const server = http.createServer(app);
 // Inicializar Socket.io con CORS (importante para que el front se conecte)
 const io = new Server(server, {
   cors: {
-    origin: "*", // En producción cambia esto por tu dominio
+    origin: "*", 
     methods: ["GET", "POST"],
   },
 });
+
+// NUEVO: Guardamos 'io' en 'app' para que los controladores de órdenes puedan usarlo
+app.set("io", io);
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
@@ -33,9 +37,16 @@ function getLocalIp() {
   return "127.0.0.1";
 }
 
-// --- LÓGICA DE SOCKETS PARA EL CHAT ---
+// --- LÓGICA DE SOCKETS PARA EL CHAT Y NOTIFICACIONES ---
 io.on("connection", (socket) => {
-  console.log("Chat: Usuario conectado", socket.id);
+  console.log("Socket: Usuario conectado", socket.id);
+
+  // --- KDS Y NOTIFICACIONES DE LA CAFETERÍA ---
+  socket.on("join_user_room", (userId) => {
+    socket.join(userId.toString());
+    console.log(`Notificaciones: Usuario ${userId} unido a su sala privada`);
+  });
+  // -------------------------------------------------------------
 
   // Unirse a una sala privada (Chat ID de MongoDB)
   socket.on("join_chat", (chatId) => {
@@ -50,7 +61,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Chat: Usuario desconectado");
+    console.log("Socket: Usuario desconectado");
   });
 });
 
