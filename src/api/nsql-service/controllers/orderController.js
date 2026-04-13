@@ -114,7 +114,7 @@ const orderController = {
       const order = await Order.findByIdAndUpdate(
         req.params.id, 
         { status: "LISTO" },
-        { new: true } // Para que nos devuelva el objeto ya actualizado
+        { returnDocument: 'after'} // Para que nos devuelva el objeto ya actualizado
       );
 
       if (!order) {
