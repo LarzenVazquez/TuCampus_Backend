@@ -250,7 +250,7 @@ const forgotPassword = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    const resetLink = `https://tucampus.vercel.app/reset-password.html?token=${resetToken}`;
+    const resetLink = `https://tucampus.vercel.app/auth/reset-password.html?token=${resetToken}`;
 const msg = {
       to: email,
       from: 'tucampus.uteq@gmail.com', // Asegúrate de que este correo esté verificado en SendGrid
