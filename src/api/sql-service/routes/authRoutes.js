@@ -12,6 +12,7 @@ router.get("/public-key", authController.getPublicKeyEndpoint);
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.post("/forgot-password", authController.forgotPassword);
+router.get("/verify-email", authController.verifyEmail);
 
 // 2. Rutas Protegidas (Requieren verifyToken)
 // Estas rutas ahora recibirán el rol en formato sigla ('A', 'A_C', 'Al', 'A_V')
