@@ -51,7 +51,7 @@ const orderController = {
     }
   },
 
-  checkout: async (req, res) => {
+checkout: async (req, res) => {
     try {
       const { metodoPago } = req.body;
 
@@ -64,9 +64,11 @@ const orderController = {
         return res.status(400).json({ message: "No tienes un carrito activo para pagar" });
       }
 
+      // --- 3. LIMPIEZA DE LA RESERVA ---
+      // Como ya restamos el stock real en la función de arriba, aquí SOLO limpiamos el contador de "reservado"
       for (const item of cart.items) {
         await Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -item.cantidad },
+          $inc: { reservado: -item.cantidad },
         });
       }
 
@@ -95,7 +97,7 @@ const orderController = {
 
       res.status(201).json({
         status: "success",
-        message: "¡Pago exitoso y stock actualizado!",
+        message: "¡Pago exitoso y orden procesada!",
         qrData: cart.qrCodeData,
         orderId: cart._id,
       });
@@ -179,14 +181,49 @@ markAsReady: async (req, res) => {
     }
   },
 
-  createPreference: async (req, res) => {
+ createPreference: async (req, res) => {
     try {
+      const items = req.body.items;
+      const reservasExitosas = []; // Aquí guardaremos lo que sí logramos apartar
+
+      // --- 1. INTENTO DE RESERVA ATÓMICA ---
+      for (const item of items) {
+        const producto = await Product.findOneAndUpdate(
+          {
+            _id: item.productId,
+            stock: { $gte: item.cantidad } // La regla de oro: Solo aparta si hay stock real
+          },
+          {
+            $inc: { stock: -item.cantidad, reservado: item.cantidad } // Resta del stock, suma a reservado
+          },
+          { new: true }
+        );
+
+        if (!producto) {
+          // ¡ALERTA! Alguien nos ganó el producto o no hay suficiente.
+          // Hacemos ROLLBACK: Devolvemos el stock de los productos que SÍ habíamos logrado apartar en este carrito.
+          for (const resItem of reservasExitosas) {
+            await Product.findByIdAndUpdate(resItem.productId, {
+              $inc: { stock: resItem.cantidad, reservado: -resItem.cantidad }
+            });
+          }
+          
+          return res.status(400).json({ 
+            message: `¡Ups! Alguien se acaba de llevar las últimas unidades de ${item.nombre}. Actualiza tu carrito.` 
+          });
+        }
+
+        // Si se pudo apartar, lo guardamos en la lista de éxitos
+        reservasExitosas.push(item);
+      }
+
+      // --- 2. GENERACIÓN DEL LINK DE PAGO (Solo llegamos aquí si TODO se apartó con éxito) ---
       const client = new MercadoPagoConfig({
         accessToken: process.env.MP_ACCESS_TOKEN,
       });
       const preference = new Preference(client);
 
-      const items = req.body.items.map((item) => ({
+      const mpItems = items.map((item) => ({
         title: item.nombre || "Producto",
         unit_price: Number(item.precio) || 0,
         quantity: Number(item.cantidad) || 1,
@@ -196,7 +233,7 @@ markAsReady: async (req, res) => {
 
       const result = await preference.create({
         body: {
-          items: items,
+          items: mpItems,
           back_urls: {
             success: `${baseURL}/store/confirmacion.html`,
             failure: `${baseURL}/store/carrito.html`,
@@ -205,8 +242,11 @@ markAsReady: async (req, res) => {
           auto_return: "approved",
         },
       });
+      
       res.json({ id: result.id, url_pago: result.init_point });
+
     } catch (error) {
+      console.error("Error al crear preferencia:", error);
       res.status(500).json({ message: "Error al crear la preferencia de pago" });
     }
   },

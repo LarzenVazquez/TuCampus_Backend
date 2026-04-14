@@ -20,6 +20,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    reservado: { 
+      type: Number, 
+      default: 0 
+    },
     estado: {
       type: String,
       enum: ["DISPONIBLE", "AGOTADO", "OCULTO"],
