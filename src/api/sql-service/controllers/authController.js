@@ -7,6 +7,7 @@ const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
+const db = require("../../config/dbSql");
 
 // Configuración de SendGrid
 const sgMail = require('@sendgrid/mail');
@@ -194,7 +195,7 @@ changePassword: async (req, res) => {
       res.status(500).json({ message: "Error interno al actualizar la contraseña" });
     }
   }
-  
+
 const uploadSecureFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No se subió ningún archivo" });
