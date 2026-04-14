@@ -11,20 +11,24 @@ const { checkStock } = require("../../../middlewares/stockMiddleware");
 router.get("/cart", verifyToken, orderController.getCart);
 router.post("/cart", verifyToken, orderController.saveCart);
 
-router.post("/checkout", verifyToken, checkStock, orderController.checkout);
-
-router.post("/verify-qr", verifyToken, isAdmin, orderController.verifyOrder);
-
-router.get("/kitchen", verifyToken, orderController.getPaidOrders);
-router.put("/ready/:id", verifyToken, orderController.markAsReady);
-router.get("/me", verifyToken, orderController.getMyOrders);
-
 router.post(
   "/create-preference",
   verifyToken,
-  orderController.createPreference,
+  checkStock, 
+  orderController.createPreference
 );
 
-// Esta línea debe coincidir con lo que pide el apiservices.js
+router.post(
+  "/checkout", 
+  verifyToken, 
+  orderController.checkout
+);
+
+// --- RUTAS DE COCINA Y PEDIDOS ---
+router.post("/verify-qr", verifyToken, isAdmin, orderController.verifyOrder);
+router.get("/kitchen", verifyToken, orderController.getPaidOrders);
+router.put("/ready/:id", verifyToken, orderController.markAsReady);
+router.get("/me", verifyToken, orderController.getMyOrders);
 router.get("/stats", verifyToken, isAdminC, orderController.getGlobalStats);
+
 module.exports = router;
