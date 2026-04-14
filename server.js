@@ -42,12 +42,19 @@ io.on("connection", (socket) => {
   console.log("Socket: Usuario conectado", socket.id);
 
   // --- KDS Y NOTIFICACIONES DE LA CAFETERÍA ---
+// --- LO NUEVO PARA EL KDS Y NOTIFICACIONES DE LA CAFETERÍA ---
   socket.on("join_user_room", (userId) => {
+    // 🛡️ ESCUDO: Si no hay userId, nos salimos antes de que explote
+    if (!userId) {
+      console.warn("Socket: Un usuario intentó unirse sin un ID válido.");
+      return; 
+    }
+    
+    // Si sí hay userId, lo conectamos de forma segura
     socket.join(userId.toString());
     console.log(`Notificaciones: Usuario ${userId} unido a su sala privada`);
   });
-  // -------------------------------------------------------------
-
+  
   // Unirse a una sala privada (Chat ID de MongoDB)
   socket.on("join_chat", (chatId) => {
     socket.join(chatId);
