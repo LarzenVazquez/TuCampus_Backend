@@ -29,6 +29,7 @@ router.post(
 // Rutas para recuperación (Olvido)
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
+router.put("/change-password", verifyToken, authController.changePassword);
 
 // Ruta para cambio manual (Logueado)
 router.put("/change-password", verifyToken, authController.changePassword);

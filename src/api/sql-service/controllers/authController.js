@@ -150,8 +150,51 @@ const login = async (req, res) => {
     res.status(500).json({ message: "Error al iniciar sesión" });
   }
 };
+changePassword: async (req, res) => {
+    try {
+      const { encryptedCurrentPassword, encryptedNewPassword, encryptedAesKey, iv } = req.body;
+      const userId = req.user.id; // Viene del token
 
-/* --- EL RESTO DE TUS FUNCIONES (Sin cambios) --- */
+      // 1. Descifrar la llave AES (Larzen, esto es igualito a tu función de login)
+      const privateKey = forge.pki.privateKeyFromPem(process.env.PRIVATE_KEY);
+      const aesKeyHex = privateKey.decrypt(forge.util.decode64(encryptedAesKey));
+      const aesKey = forge.util.hexToBytes(aesKeyHex);
+      const ivBytes = forge.util.hexToBytes(iv);
+
+      // 2. Descifrar contraseña actual
+      const decipher1 = forge.cipher.createDecipher("AES-CBC", aesKey);
+      decipher1.start({ iv: ivBytes });
+      decipher1.update(forge.util.createBuffer(forge.util.decode64(encryptedCurrentPassword)));
+      decipher1.finish();
+      const currentPassword = decipher1.output.toString();
+
+      // 3. Descifrar nueva contraseña
+      const decipher2 = forge.cipher.createDecipher("AES-CBC", aesKey);
+      decipher2.start({ iv: ivBytes });
+      decipher2.update(forge.util.createBuffer(forge.util.decode64(encryptedNewPassword)));
+      decipher2.finish();
+      const newPassword = decipher2.output.toString();
+
+      // 4. Buscar usuario en MySQL
+      const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [userId]);
+      if (users.length === 0) return res.status(404).json({ message: "Usuario no encontrado" });
+      const user = users[0];
+
+      // 5. Verificar que la contraseña actual sea correcta
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+
+      // 6. Hashear la nueva contraseña y guardarla
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      await db.execute("UPDATE users SET password = ? WHERE id = ?", [hashedNewPassword, userId]);
+
+      res.json({ message: "Contraseña actualizada exitosamente" });
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error);
+      res.status(500).json({ message: "Error interno al actualizar la contraseña" });
+    }
+  }
+  
 const uploadSecureFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No se subió ningún archivo" });
