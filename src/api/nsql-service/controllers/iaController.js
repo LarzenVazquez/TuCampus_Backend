@@ -2,7 +2,7 @@ const brain = require("brain.js");
 const Recommendation = require("../models/IaModel");
 const Product = require("../models/productModel");
 
-const net = new brain.NeuralNetwork({ hiddenLayers: [4, 4] });
+let net = new brain.NeuralNetwork({ hiddenLayers: [4, 4] });
 
 const getMexicoHour = () => {
   const str = new Date().toLocaleString("en-US", {
@@ -12,15 +12,27 @@ const getMexicoHour = () => {
 };
 
 const iaController = {
+  // 1. TRAIN: Entrenamiento de la red neuronal
+  // Busca productos de cafetería ignorando mayúsculas/minúsculas
   train: async (req, res) => {
     try {
-      const productosDB = await Product.find({ estado: "DISPONIBLE" });
       const horaActual = getMexicoHour();
 
+      // Filtro flexible con Regex para evitar el error de "No hay productos"
+      const productosDB = await Product.find({
+        tipo: { $regex: /^cafeteria$/i },
+        estado: "DISPONIBLE",
+      });
+
       if (productosDB.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "No hay productos para entrenar" });
+        console.error(
+          "Error: No se encontraron productos con tipo 'Cafeteria' y estado 'DISPONIBLE'",
+        );
+        if (res)
+          return res.status(404).json({
+            error: "No hay productos de cafetería disponibles para entrenar.",
+          });
+        return;
       }
 
       const trainingData = productosDB.map((p) => ({
@@ -29,12 +41,12 @@ const iaController = {
           stock: p.stock > 0 ? 1 : 0,
           horario: horaActual / 24,
         },
-        output: { relevancia: p.stock > 0 ? 1 : 0 },
+        output: { relevancia: p.stock > 5 ? 1 : 0.3 },
       }));
 
       net.train(trainingData, { iterations: 2000 });
 
-      const resultados = [];
+      // Guardar predicciones en la base de datos de Recomendaciones
       for (const p of productosDB) {
         const output = net.run({
           precio: p.precio / 500,
@@ -42,86 +54,40 @@ const iaController = {
           horario: horaActual / 24,
         });
 
-        const score = output.relevancia;
-
-        if (score > 0.3) {
-          await Recommendation.findOneAndUpdate(
-            { producto_base_id: p._id, hora_prediccion: horaActual },
-            {
-              nombre_producto: p.nombre,
-              precio: p.precio,
-              categoria: p.categoria || "General",
-              imagenUrl: p.imagenUrl,
-              score_relevancia: score,
-              ultima_actualizacion: new Date(),
-            },
-            { upsert: true },
-          );
-          resultados.push({
-            producto: p.nombre,
-            score: (score * 100).toFixed(0) + "%",
-          });
-        }
+        await Recommendation.findOneAndUpdate(
+          { producto_base_id: p._id, hora_prediccion: horaActual },
+          {
+            nombre_producto: p.nombre,
+            precio: p.precio,
+            categoria: p.categoria || "General",
+            imagenUrl: p.imagenUrl,
+            score_relevancia: output.relevancia,
+            ultima_actualizacion: new Date(),
+          },
+          { upsert: true },
+        );
       }
 
-      res.json({
-        status: "success",
-        hora_entrenamiento: horaActual,
-        items_procesados: resultados.length,
-      });
+      console.log(
+        `IA Entrenada con ${productosDB.length} productos a las ${horaActual}:00 hrs.`,
+      );
+      if (res)
+        res.json({
+          status: "success",
+          items: productosDB.length,
+          hora: horaActual,
+        });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error en train:", err.message);
+      if (res) res.status(500).json({ error: err.message });
     }
   },
 
-  getStatus: async (req, res) => {
-    try {
-      const stats = await Recommendation.aggregate([
-        {
-          $group: {
-            _id: null,
-            total: { $sum: 1 },
-            ultimaActualizacion: { $max: "$ultima_actualizacion" },
-            promedioRelevancia: { $avg: "$score_relevancia" },
-          },
-        },
-      ]);
-      res.json({
-        estado: "Operativo",
-        datos: stats[0] || { total: 0, ultimaActualizacion: "Sin datos" },
-      });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-
-  reset: async (req, res) => {
-    try {
-      await Recommendation.deleteMany({});
-      res.json({ status: "success" });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-
-  predict: async (req, res) => {
-    try {
-      const horaActual = getMexicoHour();
-      const sugerencias = await Recommendation.find({
-        hora_prediccion: horaActual,
-      })
-        .sort({ score_relevancia: -1 })
-        .limit(6);
-      res.json({ tipo: "Tendencias", sugerencias });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  },
-
+  // 2. ASK: Búsqueda por lenguaje natural y presupuesto
   ask: async (req, res) => {
     try {
       const { prompt } = req.query;
-      if (!prompt) return res.status(400).json({ error: "Vacío" });
+      if (!prompt) return res.status(400).json({ error: "Prompt vacío" });
 
       const horaActual = getMexicoHour();
       const numMatch = prompt.match(/\d+/);
@@ -155,15 +121,27 @@ const iaController = {
     }
   },
 
-  registerFeedback: async (req, res) => {
+  // 3. RESULTS: Tendencias actuales basadas en la hora
+  results: async (req, res) => {
     try {
-      const { id, accion } = req.body;
-      const update =
-        accion === "venta"
-          ? { $inc: { ventas_vinculadas: 1 } }
-          : { $inc: { clics_interaccion: 1 } };
-      await Recommendation.findByIdAndUpdate(id, update);
-      res.json({ status: "success" });
+      const horaActual = getMexicoHour();
+      const sugerencias = await Recommendation.find({
+        hora_prediccion: horaActual,
+      })
+        .sort({ score_relevancia: -1 })
+        .limit(6);
+      res.json({ tipo: "Tendencias Actuales", sugerencias });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
+  // 4. RESET: Limpieza de datos y reinicio de red neuronal
+  reset: async (req, res) => {
+    try {
+      await Recommendation.deleteMany({});
+      net = new brain.NeuralNetwork({ hiddenLayers: [4, 4] });
+      res.json({ status: "success", message: "IA Reiniciada correctamente" });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
