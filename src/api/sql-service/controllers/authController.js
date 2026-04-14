@@ -7,7 +7,7 @@ const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
 const { decryptrsa, getpublickey } = require("../../../utils/cryptoHelper");
-const db = require("../../config/dbSql");
+const db = require("../../../config/dbSql");
 
 // Configuración de SendGrid
 const sgMail = require('@sendgrid/mail');
