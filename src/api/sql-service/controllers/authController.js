@@ -26,27 +26,23 @@ const register = async (req, res) => {
     if (existing)
       return res.status(400).json({ message: "Email ya registrado" });
 
-    /* Encriptar contraseña con Bcrypt */
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Crear usuario en BD (Larzen: Asegúrate de tener email_verificado en 0 por defecto en MySQL)
     const userId = await User.create({
       nombre,
       email,
       password: hashedPassword,
       matricula,
-      rol: "Al", // Se asegura el rol por defecto
-      vendedor_verificado: 0, // Se asegura el estado inicial
+      rol: "Al", 
+      vendedor_verificado: 0, 
     });
 
-    // Generar token para el correo (expira en 24h)
     const verifyToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "24h" });
     const verifyLink = `https://tucampus.vercel.app/auth/verify-email.html?token=${verifyToken}`;
 
-    // Enviar correo de bienvenida y verificación
     const msg = {
       to: email,
-      from: 'tucampus.uteq@gmail.com', // El correo que validaron en SendGrid
+      from: 'tucampus.uteq@gmail.com', 
       subject: "TuCampus - Verifica tu correo universitario",
       html: `<h2>¡Bienvenido a TuCampus!</h2>
              <p>Hola ${nombre}, estamos emocionados de tenerte aquí.</p>
@@ -73,9 +69,7 @@ const verifyEmail = async (req, res) => {
     const { token } = req.query;
     if (!token) return res.status(400).json({ error: "Token no proporcionado" });
 
-    // Desencriptar token para saber qué correo es
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     await User.verifyEmail(decoded.email); 
 
     res.json({ message: "¡Correo verificado exitosamente!" });
@@ -84,15 +78,12 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-/* --- 3. LOGIN (CON BLOQUEO SI NO ESTÁ VERIFICADO) --- */
+/* --- 3. LOGIN --- */
 const login = async (req, res) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv } = req.body;
 
-    /* Desencriptar la llave AES que viene protegida con RSA */
     const aesKeyHex = decryptrsa(encryptedAesKey);
-
-    /* Configurar el descifrador AES */
     const keyBytes = forge.util.hexToBytes(aesKeyHex);
     const ivBytes = forge.util.hexToBytes(iv);
     const encryptedPassBytes = forge.util.decode64(encryptedPassword);
@@ -102,32 +93,23 @@ const login = async (req, res) => {
     decipher.update(forge.util.createBuffer(encryptedPassBytes));
 
     const result = decipher.finish();
-    if (!result)
-      return res.status(400).json({ message: "Error al descifrar la contraseña" });
+    if (!result) return res.status(400).json({ message: "Error al descifrar la contraseña" });
 
     const passwordPlana = decipher.output.toString();
 
-    /* Buscar usuario en la base de datos */
     const user = await User.findByEmail(email);
-    if (!user)
-      return res.status(401).json({ message: "Credenciales incorrectas" });
+    if (!user) return res.status(401).json({ message: "Credenciales incorrectas" });
 
-    /* Comparar contraseña plana contra el hash de la base de datos */
     const isMatch = await bcrypt.compare(passwordPlana, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Credenciales incorrectas" });
+    if (!isMatch) return res.status(401).json({ message: "Credenciales incorrectas" });
 
-    /* !!! BLOQUEO DE DOBLE VERIFICACIÓN !!! */
-    // Comprueba que Larzen haya agregado esta columna, de lo contrario esto siempre bloqueará
     if (user.email_verificado === 0 || user.email_verificado === false) {
       return res.status(403).json({ message: "Debes verificar tu correo institucional antes de iniciar sesión. Revisa tu bandeja de entrada." });
     }
 
-    /* buscar si el usuario ya tiene una foto de perfil */
     const userFiles = await User.getUserFiles(user.id);
     const fotoUrl = userFiles.length > 0 ? userFiles[0].url_archivo : null;
 
-    /* Crear token JWT para la sesión */
     const token = jwt.sign(
       { id: user.id, rol: user.rol, email: user.email },
       process.env.JWT_SECRET,
@@ -151,57 +133,13 @@ const login = async (req, res) => {
     res.status(500).json({ message: "Error al iniciar sesión" });
   }
 };
-changePassword: async (req, res) => {
-    try {
-      const { encryptedCurrentPassword, encryptedNewPassword, encryptedAesKey, iv } = req.body;
-      const userId = req.user.id; // Viene del token
 
-      // 1. Descifrar la llave AES (Larzen, esto es igualito a tu función de login)
-      const privateKey = forge.pki.privateKeyFromPem(process.env.PRIVATE_KEY);
-      const aesKeyHex = privateKey.decrypt(forge.util.decode64(encryptedAesKey));
-      const aesKey = forge.util.hexToBytes(aesKeyHex);
-      const ivBytes = forge.util.hexToBytes(iv);
-
-      // 2. Descifrar contraseña actual
-      const decipher1 = forge.cipher.createDecipher("AES-CBC", aesKey);
-      decipher1.start({ iv: ivBytes });
-      decipher1.update(forge.util.createBuffer(forge.util.decode64(encryptedCurrentPassword)));
-      decipher1.finish();
-      const currentPassword = decipher1.output.toString();
-
-      // 3. Descifrar nueva contraseña
-      const decipher2 = forge.cipher.createDecipher("AES-CBC", aesKey);
-      decipher2.start({ iv: ivBytes });
-      decipher2.update(forge.util.createBuffer(forge.util.decode64(encryptedNewPassword)));
-      decipher2.finish();
-      const newPassword = decipher2.output.toString();
-
-      // 4. Buscar usuario en MySQL
-      const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [userId]);
-      if (users.length === 0) return res.status(404).json({ message: "Usuario no encontrado" });
-      const user = users[0];
-
-      // 5. Verificar que la contraseña actual sea correcta
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) return res.status(400).json({ message: "La contraseña actual es incorrecta" });
-
-      // 6. Hashear la nueva contraseña y guardarla
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      await db.execute("UPDATE users SET password = ? WHERE id = ?", [hashedNewPassword, userId]);
-
-      res.json({ message: "Contraseña actualizada exitosamente" });
-    } catch (error) {
-      console.error("Error al cambiar contraseña:", error);
-      res.status(500).json({ message: "Error interno al actualizar la contraseña" });
-    }
-  }
-
+/* --- 4. SUBIDA DE ARCHIVOS --- */
 const uploadSecureFile = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No se subió ningún archivo" });
     const fileBuffer = fs.readFileSync(req.file.path);
     const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
-    console.log("Firma del archivo:", fileHash);
 
     const form = new FormData();
     form.append("image", fileBuffer.toString("base64"));
@@ -252,23 +190,49 @@ const getProfile = async (req, res) => {
   }
 };
 
+/* --- 5. CAMBIO DE CONTRASEÑA ENCRIPTADO (NUEVO) --- */
 const changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
-    const userId = req.user.id;
+    const { encryptedCurrentPassword, encryptedNewPassword, encryptedAesKey, iv } = req.body;
+    const userId = req.user.id; 
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+    // 1. Descifrar la llave AES 
+    const privateKey = forge.pki.privateKeyFromPem(process.env.PRIVATE_KEY);
+    const aesKeyHex = privateKey.decrypt(forge.util.decode64(encryptedAesKey));
+    const aesKey = forge.util.hexToBytes(aesKeyHex);
+    const ivBytes = forge.util.hexToBytes(iv);
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.status(401).json({ error: "La contraseña actual es incorrecta" });
+    // 2. Descifrar contraseña actual
+    const decipher1 = forge.cipher.createDecipher("AES-CBC", aesKey);
+    decipher1.start({ iv: ivBytes });
+    decipher1.update(forge.util.createBuffer(forge.util.decode64(encryptedCurrentPassword)));
+    decipher1.finish();
+    const currentPassword = decipher1.output.toString();
 
-    const hashed = await bcrypt.hash(newPassword, 10);
-    await User.updatePassword(userId, hashed);
+    // 3. Descifrar nueva contraseña
+    const decipher2 = forge.cipher.createDecipher("AES-CBC", aesKey);
+    decipher2.start({ iv: ivBytes });
+    decipher2.update(forge.util.createBuffer(forge.util.decode64(encryptedNewPassword)));
+    decipher2.finish();
+    const newPassword = decipher2.output.toString();
 
-    res.json({ message: "Contraseña actualizada con éxito" });
+    // 4. Buscar usuario en MySQL
+    const [users] = await db.execute("SELECT * FROM users WHERE id = ?", [userId]);
+    if (users.length === 0) return res.status(404).json({ message: "Usuario no encontrado" });
+    const user = users[0];
+
+    // 5. Verificar que la contraseña actual sea correcta
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+
+    // 6. Hashear la nueva contraseña y guardarla
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await db.execute("UPDATE users SET password = ? WHERE id = ?", [hashedNewPassword, userId]);
+
+    res.json({ message: "Contraseña actualizada exitosamente" });
   } catch (error) {
-    res.status(500).json({ error: "Error interno al cambiar contraseña" });
+    console.error("Error al cambiar contraseña:", error);
+    res.status(500).json({ message: "Error interno al actualizar la contraseña" });
   }
 };
 
