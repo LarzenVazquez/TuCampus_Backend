@@ -22,6 +22,7 @@ router.get("/me", verifyToken, orderController.getMyOrders);
 router.post(
   "/create-preference",
   verifyToken,
+  checkStock,
   orderController.createPreference,
 );
 
