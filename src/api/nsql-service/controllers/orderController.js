@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { MercadoPagoConfig, Preference } = require("mercadopago");
 const baseURL = process.env.FRONTEND_URL;
-const Notification = require("../models/notificationModel");
+const Notification = require("../../sql-service/models/notificationModel");
 
 const orderController = {
   saveCart: async (req, res) => {
@@ -109,46 +109,40 @@ const orderController = {
   },
 
   // Para la cocina: Cambia el estado a LISTO y avisa al alumno
-  markAsReady: async (req, res) => {
-    // --- 🔔 INTEGRACIÓN WEBSOCKET Y BD ---
-const io = req.app.get("io");
-const mensajeAviso = "🍔 ¡Tu pedido está listo! Pasa a recogerlo a la cafetería.";
-
-// 1. Guardar en Base de Datos
-await Notification.create(order.userId, mensajeAviso);
-
-// 2. Avisar por WebSocket
-if (io) {
-  io.to(order.userId.toString()).emit("orden_lista", {
-    ordenId: order._id,
-    status: "LISTO",
-    mensaje: mensajeAviso
-  });
-}
+markAsReady: async (req, res) => {
     try {
-      // Buscamos y actualizamos para obtener el userId del dueño del pedido
+      // 1. PRIMERO buscamos la orden (si no, no sabemos de quién es)
       const order = await Order.findByIdAndUpdate(
         req.params.id, 
         { status: "LISTO" },
-        { returnDocument: 'after'} // Para que nos devuelva el objeto ya actualizado
+        { returnDocument: 'after'} 
       );
 
       if (!order) {
         return res.status(404).json({ message: "Orden no encontrada" });
       }
 
-      // --- 🔔 INTEGRACIÓN WEBSOCKET: NOTIFICAR AL ALUMNO ---
+      // ✅ CORRECCIÓN 2: El código de avisos va AQUÍ adentro, cuando 'order' ya existe
       const io = req.app.get("io");
+      const mensajeAviso = "🍔 ¡Tu pedido está listo! ☕ Pasa a recogerlo a la cafetería.";
+
+      try {
+        // Guardar en la Base de Datos de MySQL
+        await Notification.create(order.userId.toString(), mensajeAviso);
+      } catch (dbErr) {
+        console.error("Error guardando notificación en MySQL:", dbErr);
+        // No detenemos el proceso si falla el guardado, seguimos para mandarle el WebSocket
+      }
+
+      // Avisar por WebSocket al instante
       if (io) {
-        // Mandamos el mensaje SOLO al "cuarto" privado de ese alumno
         io.to(order.userId.toString()).emit("orden_lista", {
           ordenId: order._id,
           status: "LISTO",
-          mensaje: "¡Tu pedido está listo! ☕ Pasa a recogerlo a la cafetería."
+          mensaje: mensajeAviso
         });
-        console.log(`Socket: Notificación de orden lista enviada al usuario ${order.userId}`);
+        console.log(`Socket: Notificación enviada al usuario ${order.userId}`);
       }
-      // ----------------------------------------------------
 
       res.json({ message: "Orden lista para entregar", order });
     } catch (error) {
