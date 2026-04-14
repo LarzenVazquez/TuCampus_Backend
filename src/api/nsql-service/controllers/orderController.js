@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { MercadoPagoConfig, Preference } = require("mercadopago");
 const baseURL = process.env.FRONTEND_URL;
+const Notification = require("../models/notificationModel");
 
 const orderController = {
   saveCart: async (req, res) => {
@@ -109,6 +110,21 @@ const orderController = {
 
   // Para la cocina: Cambia el estado a LISTO y avisa al alumno
   markAsReady: async (req, res) => {
+    // --- 🔔 INTEGRACIÓN WEBSOCKET Y BD ---
+const io = req.app.get("io");
+const mensajeAviso = "🍔 ¡Tu pedido está listo! Pasa a recogerlo a la cafetería.";
+
+// 1. Guardar en Base de Datos
+await Notification.create(order.userId, mensajeAviso);
+
+// 2. Avisar por WebSocket
+if (io) {
+  io.to(order.userId.toString()).emit("orden_lista", {
+    ordenId: order._id,
+    status: "LISTO",
+    mensaje: mensajeAviso
+  });
+}
     try {
       // Buscamos y actualizamos para obtener el userId del dueño del pedido
       const order = await Order.findByIdAndUpdate(

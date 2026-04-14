@@ -12,6 +12,7 @@ const authRoutes = require("./src/api/sql-service/routes/authRoutes");
 const adminRoutes = require("./src/api/sql-service/routes/adminRoutes");
 const userRoutes = require("./src/api/sql-service/routes/userRoutes");
 
+
 // NoSQL Service (MongoDB)
 const cafeRoutes = require("./src/api/nsql-service/routes/cafeRoutes");
 const marketRoutes = require("./src/api/nsql-service/routes/marketRoutes");
@@ -43,6 +44,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", require("./src/api/sql-service/routes/notificationRoutes"));
 
 // Rutas de Servicios del Campus (NoSQL)
 app.use("/api/cafe", cafeRoutes);
