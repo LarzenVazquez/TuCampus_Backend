@@ -14,7 +14,4 @@ router.get("/results", verifyToken, iaController.results);
 router.post("/train", verifyToken, isAdminC, iaController.train);
 router.post("/reset", verifyToken, isAdminC, iaController.reset);
 
-router.post("/a", iaController.reset);
-router.post("/b", iaController.train);
-
 module.exports = router;
