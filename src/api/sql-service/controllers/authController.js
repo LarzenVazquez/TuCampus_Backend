@@ -190,15 +190,14 @@ const getProfile = async (req, res) => {
   }
 };
 
-/* --- 5. CAMBIO DE CONTRASEÑA ENCRIPTADO (NUEVO) --- */
+/* --- 5. CAMBIO DE CONTRASEÑA ENCRIPTADO --- */
 const changePassword = async (req, res) => {
   try {
     const { encryptedCurrentPassword, encryptedNewPassword, encryptedAesKey, iv } = req.body;
     const userId = req.user.id; 
 
-    // 1. Descifrar la llave AES 
-    const privateKey = forge.pki.privateKeyFromPem(process.env.PRIVATE_KEY);
-    const aesKeyHex = privateKey.decrypt(forge.util.decode64(encryptedAesKey));
+    // 1. Descifrar la llave AES (¡AHORA USAMOS EL HELPER DE LARZEN!)
+    const aesKeyHex = decryptrsa(encryptedAesKey);
     const aesKey = forge.util.hexToBytes(aesKeyHex);
     const ivBytes = forge.util.hexToBytes(iv);
 
