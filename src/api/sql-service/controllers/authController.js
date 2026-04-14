@@ -74,7 +74,7 @@ const verifyEmail = async (req, res) => {
 
     // Desencriptar token para saber qué correo es
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     await User.verifyEmail(decoded.email); 
 
     res.json({ message: "¡Correo verificado exitosamente!" });
@@ -137,6 +137,7 @@ const login = async (req, res) => {
       status: "success",
       token,
       user: {
+        id: user.id,
         nombre: user.nombre,
         rol: user.rol,
         email: user.email,

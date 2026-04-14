@@ -26,7 +26,7 @@ const orderController = {
           items,
           total,
           status: "CARRITO",
-          qrCodeData: null,
+          // qrCodeData: null,
         });
         await cart.save();
       }
