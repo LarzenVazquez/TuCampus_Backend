@@ -81,7 +81,25 @@ const verifyEmail = async (req, res) => {
 /* --- 3. LOGIN --- */
 const login = async (req, res) => {
   try {
-    const { email, encryptedPassword, encryptedAesKey, iv } = req.body;
+    const { email, encryptedPassword, encryptedAesKey, iv, captchaToken } = req.body;
+
+    // Validamos que el captchaToken exista
+    if (!captchaToken) {
+      return res.status(400).json({ message: "Verificación Captcha requerida." });
+    }
+
+    // Le preguntamos a Google si el humano es real
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+    const captchaRes = await axios.post(verifyUrl, null, {
+      params: {
+        secret: process.env.RECAPTCHA_SECRET_KEY, 
+        response: captchaToken
+      }
+    });
+
+    if (!captchaRes.data.success) {
+      return res.status(401).json({ message: "Verificación de Captcha fallida. Intenta de nuevo." });
+    }
 
     const aesKeyHex = decryptrsa(encryptedAesKey);
     const keyBytes = forge.util.hexToBytes(aesKeyHex);
