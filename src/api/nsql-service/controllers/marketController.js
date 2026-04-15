@@ -19,7 +19,7 @@ const marketController = {
             : ["https://images.unsplash.com/photo-1526304640581-d334cdbbf45e"],
         estatus: "pendiente",
       });
-
+      //
       await nuevoItem.save();
       res.status(201).json({
         message: "Producto enviado a revisión. Estará visible pronto.",
