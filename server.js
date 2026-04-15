@@ -1,7 +1,7 @@
-//server.js 
+//server.js
 const app = require("./app");
 const http = require("http");
-const { Server } = require("socket.io"); 
+const { Server } = require("socket.io");
 const os = require("os");
 const cron = require("node-cron");
 const dbSql = require("./src/config/dbSql");
@@ -11,18 +11,15 @@ require("dotenv").config();
 
 app.set("trust proxy", 1);
 
-// Crear el servidor HTTP usando la app de Express
 const server = http.createServer(app);
 
-// Inicializar Socket.io con CORS (importante para que el front se conecte)
 const io = new Server(server, {
   cors: {
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-// NUEVO: Guardamos 'io' en 'app' para que los controladores de órdenes puedan usarlo
 app.set("io", io);
 
 function getLocalIp() {
@@ -37,33 +34,24 @@ function getLocalIp() {
   return "127.0.0.1";
 }
 
-// --- LÓGICA DE SOCKETS PARA EL CHAT Y NOTIFICACIONES ---
 io.on("connection", (socket) => {
   console.log("Socket: Usuario conectado", socket.id);
 
-  // --- KDS Y NOTIFICACIONES DE LA CAFETERÍA ---
-// --- LO NUEVO PARA EL KDS Y NOTIFICACIONES DE LA CAFETERÍA ---
   socket.on("join_user_room", (userId) => {
-    // 🛡️ ESCUDO: Si no hay userId, nos salimos antes de que explote
     if (!userId) {
       console.warn("Socket: Un usuario intentó unirse sin un ID válido.");
-      return; 
+      return;
     }
-    
-    // Si sí hay userId, lo conectamos de forma segura
     socket.join(userId.toString());
     console.log(`Notificaciones: Usuario ${userId} unido a su sala privada`);
   });
-  
-  // Unirse a una sala privada (Chat ID de MongoDB)
+
   socket.on("join_chat", (chatId) => {
     socket.join(chatId);
     console.log(`Chat: Usuario unido a sala ${chatId}`);
   });
 
-  // Escuchar cuando alguien envía un mensaje
   socket.on("send_message", (data) => {
-    // Reenviar el mensaje a todos en la sala (incluyendo al vendedor/comprador)
     io.to(data.chatId).emit("receive_message", data);
   });
 
@@ -86,28 +74,37 @@ async function initialize() {
     const PORT = process.env.PORT || 3000;
     const localIp = getLocalIp();
 
-    // 3. Inicio de servidor (USAMOS 'server.listen' en lugar de 'app.listen')
     server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server: http://localhost:${PORT}/api`);
       console.log(`Network: http://${localIp}:${PORT}/api`);
       console.log("WebSockets: Activo");
     });
 
-    // Cron Job para IA
     cron.schedule("0 * * * *", async () => {
       console.log("IA: Iniciando entrenamiento programado");
-      const fakeReq = {};
+      const fakeReq = { cron: true };
       const fakeRes = {
-        json: () => console.log("IA: Ranking actualizado"),
-        status: () => ({ json: () => {} }),
+        status: function () {
+          return this;
+        },
+        json: function () {
+          console.log("IA: Entrenamiento de hora completado");
+          return this;
+        },
       };
 
       try {
         await train(fakeReq, fakeRes);
       } catch (err) {
-        console.error("IA Error:", err.message);
+        console.error("IA Cron Error:", err.message);
       }
     });
+
+    console.log("IA: Ejecutando entrenamiento de arranque...");
+    await train(
+      { cron: true },
+      { status: () => ({ json: () => {} }), json: () => {} },
+    );
   } catch (error) {
     console.error("Fatal Error:", error.message);
     process.exit(1);
