@@ -1,5 +1,5 @@
 const Market = require("../models/marketModel");
-const db = require("../../../config/dbSql"); 
+const db = require("../../../config/dbSql");
 
 const marketController = {
   publishItem: async (req, res) => {
@@ -32,9 +32,8 @@ const marketController = {
     }
   },
 
-getMarketItems: async (req, res) => {
+  getMarketItems: async (req, res) => {
     try {
-
       const items = await Market.find({ estatus: "activo" })
         .sort({ fechaPublicacion: -1 })
         .lean();
@@ -46,21 +45,25 @@ getMarketItems: async (req, res) => {
           if (prod.nombreVendedor) {
             return prod;
           }
-          
+
           // Si es viejito y no tiene nombre, lo buscamos en MySQL
           try {
-            const [users] = await db.execute("SELECT nombre FROM users WHERE id = ?", [prod.vendedorId]);
-            const nombreCompleto = users.length > 0 ? users[0].nombre : "Usuario";
+            const [users] = await db.execute(
+              "SELECT nombre FROM users WHERE id = ?",
+              [prod.vendedorId],
+            );
+            const nombreCompleto =
+              users.length > 0 ? users[0].nombre : "Usuario";
             const primerNombre = nombreCompleto.split(" ")[0]; // Solo el primer nombre
-            
+
             return {
               ...prod,
-              nombreVendedor: primerNombre
+              nombreVendedor: primerNombre,
             };
           } catch (err) {
             return { ...prod, nombreVendedor: "Usuario" };
           }
-        })
+        }),
       );
 
       res.json(productosConNombres);
@@ -175,6 +178,22 @@ getMarketItems: async (req, res) => {
       res.json({ pendientes, activos });
     } catch (error) {
       res.status(500).json({ message: "Error en stats de market" });
+    }
+  },
+  getItemById: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const item = await Market.findById(id);
+
+      if (!item) {
+        return res.status(404).json({ message: "Producto no encontrado" });
+      }
+      res.json(item);
+    } catch (error) {
+      res.status(400).json({
+        message: "Error al obtener el detalle del producto",
+        error: error.message,
+      });
     }
   },
 };

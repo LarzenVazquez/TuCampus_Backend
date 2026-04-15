@@ -31,5 +31,6 @@ router.get("/my-items", verifyToken, marketController.getMyItems);
 
 router.put("/edit/:id", verifyToken, marketController.updateItem);
 router.delete("/remove/:id", verifyToken, marketController.deleteItem);
+router.get("/item/:id", verifyToken, marketController.getItemById);
 
 module.exports = router;
