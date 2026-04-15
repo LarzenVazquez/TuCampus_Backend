@@ -1,12 +1,14 @@
 const mongoose = require("mongoose");
 
 const recommendationSchema = new mongoose.Schema({
+  // Referencia al producto real
   producto_base_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Product", // Referencia a la colección de productos de la cafetería
+    ref: "Product",
     required: true,
   },
 
+  // Datos espejo para evitar JOINs (mejor rendimiento para la IA)
   nombre_producto: {
     type: String,
     required: true,
@@ -26,6 +28,18 @@ const recommendationSchema = new mongoose.Schema({
     type: String,
   },
 
+  // --- NUEVOS CAMPOS PARA ANALÍTICA ---
+  tipo: {
+    type: String,
+    default: "Cafeteria", // Ayuda a separar recomendaciones de Cafetería vs Marketplace
+  },
+
+  calorias: {
+    type: Number,
+    default: 0,
+  },
+
+  // --- LÓGICA DE LA IA ---
   score_relevancia: {
     type: Number,
     required: true,
@@ -38,13 +52,16 @@ const recommendationSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Para saber si la recomendación es "fresca"
   ultima_actualizacion: {
     type: Date,
     default: Date.now,
   },
 });
 
-// Índice compuesto para que el 'results' y el 'ask' vuelen al filtrar por hora y relevancia
+// ÍNDICES: Cruciales para que la búsqueda por hora sea instantánea
 recommendationSchema.index({ hora_prediccion: 1, score_relevancia: -1 });
+// Índice para búsquedas rápidas por presupuesto y tipo
+recommendationSchema.index({ precio: 1, tipo: 1 });
 
 module.exports = mongoose.model("Recommendation", recommendationSchema);
