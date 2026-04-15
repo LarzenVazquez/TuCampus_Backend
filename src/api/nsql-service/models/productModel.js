@@ -13,6 +13,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    calorias: { 
+      type: Number,
+      default: 0,
+    },
     categoria: {
       type: String,
     },
