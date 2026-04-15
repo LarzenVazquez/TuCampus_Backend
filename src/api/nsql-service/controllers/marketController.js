@@ -1,4 +1,5 @@
 const Market = require("../models/marketModel");
+const db = require("../../../config/dbSql"); 
 
 const marketController = {
   publishItem: async (req, res) => {
@@ -31,12 +32,38 @@ const marketController = {
     }
   },
 
-  getMarketItems: async (req, res) => {
+getMarketItems: async (req, res) => {
     try {
-      const items = await Market.find({ estatus: "activo" }).sort({
-        fechaPublicacion: -1,
-      });
-      res.json(items);
+
+      const items = await Market.find({ estatus: "activo" })
+        .sort({ fechaPublicacion: -1 })
+        .lean();
+
+      // 3. Cruzar con MySQL solo para los artículos viejitos que no tienen nombre
+      const productosConNombres = await Promise.all(
+        items.map(async (prod) => {
+          // Si el producto es nuevo y YA tiene el nombre guardado, lo dejamos así
+          if (prod.nombreVendedor) {
+            return prod;
+          }
+          
+          // Si es viejito y no tiene nombre, lo buscamos en MySQL
+          try {
+            const [users] = await db.execute("SELECT nombre FROM users WHERE id = ?", [prod.vendedorId]);
+            const nombreCompleto = users.length > 0 ? users[0].nombre : "Usuario";
+            const primerNombre = nombreCompleto.split(" ")[0]; // Solo el primer nombre
+            
+            return {
+              ...prod,
+              nombreVendedor: primerNombre
+            };
+          } catch (err) {
+            return { ...prod, nombreVendedor: "Usuario" };
+          }
+        })
+      );
+
+      res.json(productosConNombres);
     } catch (error) {
       res
         .status(500)
