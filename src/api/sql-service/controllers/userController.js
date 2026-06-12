@@ -1,6 +1,6 @@
 const UserFile = require("../models/fileModel");
 const Activity = require("../models/activityModel");
-const db = require('../../../config/dbSql');
+const db = require("../../../config/dbSql");
 
 exports.getProfileFiles = async (req, res) => {
   try {
@@ -29,14 +29,15 @@ exports.uploadProfilePic = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     // El ID viene del token de la sesión (verifyToken)
-    const userId = req.user.id; 
+    const userId = req.user.id;
     const { nombre, telefono } = req.body;
 
     // Actualizamos en MySQL
-    await db.query(
-      "UPDATE users SET nombre = ?, telefono = ? WHERE id = ?",
-      [nombre, telefono, userId]
-    );
+    await db.query("UPDATE users SET nombre = ?, telefono = ? WHERE id = ?", [
+      nombre,
+      telefono,
+      userId,
+    ]);
 
     res.status(200).json({ message: "Perfil actualizado correctamente" });
   } catch (error) {

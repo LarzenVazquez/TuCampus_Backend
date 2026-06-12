@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- SQL SERVICE (User & Auth) ---
+model User {
+  id                  String   @id @default(uuid())
+  nombre              String
+  email               String   @unique
+  password            String
+  matricula           String?
+  rol                 String   @default("Al") // A, A_C, Al, A_V
+  vendedor_verificado Boolean  @default(false)
+  email_verificado    Boolean  @default(false)
+  created_at          DateTime @default(now())
+
+  // Relaciones
+  productos      Product[]      @relation("VendedorRelation")
+  archivos       File[]
+  notificaciones Notificacion[]
+  sesiones       Session[]
+  actividades    ActivityLog[]
+  ventas         Market[]       @relation("Vendedor")
+  compras        Order[]
+  chatsComprador Chat[]         @relation("Comprador")
+  chatsVendedor  Chat[]         @relation("Vendedor")
+  userFiles      UserFile[]
+}
+
+model UserFile {
+  id             Int      @id @default(autoincrement())
+  userId         String // Cambiado de Int a String
+  user           User     @relation(fields: [userId], references: [id])
+  nombre_archivo String
+  url_archivo    String
+  file_hash      String
+  tipo_archivo   String
+  createdAt      DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expira_en DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// --- MARKET & PRODUCTS (NoSQL -> Relacional) ---
+model Product {
+  id              String           @id @default(uuid())
+  nombre          String
+  descripcion     String?
+  precio          Decimal
+  calorias        Int              @default(0)
+  categoria       String
+  stock           Int              @default(0)
+  reservado       Int              @default(0)
+  estado          String           @default("DISPONIBLE") // DISPONIBLE, AGOTADO, OCULTO
+  tipo            String           @default("Cafeteria")
+  imagenUrl       String
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  vendedorId      String
+  vendedor        User             @relation("VendedorRelation", fields: [vendedorId], references: [id])
+  itemsOrder      OrderItem[]
+  recomendaciones Recommendation[]
+}
+
+model Market {
+  id               String   @id @default(uuid())
+  vendedorId       String
+  vendedor         User     @relation("Vendedor", fields: [vendedorId], references: [id])
+  titulo           String
+  descripcion      String
+  precio           Decimal
+  categoria        String   @default("Otros")
+  imagenes         String[]
+  estatus          String   @default("pendiente") // pendiente, activo, vendido, rechazado, baneado
+  motivoRechazo    String?
+  fechaPublicacion DateTime @default(now())
+  chats            Chat[]
+}
+
+// --- ORDERS & CHATS ---
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  total      Decimal
+  metodoPago String      @default("Mercado Pago")
+  status     String      @default("CARRITO")
+  qrCodeData String?     @unique
+  fecha      DateTime    @default(now())
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  nombre    String
+  cantidad  Int
+  precio    Decimal
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  compradorId String
+  comprador   User      @relation("Comprador", fields: [compradorId], references: [id])
+  vendedorId  String
+  vendedor    User      @relation("Vendedor", fields: [vendedorId], references: [id])
+  productoId  String
+  producto    Market    @relation(fields: [productoId], references: [id])
+  mensajes    Message[]
+  last_update DateTime  @default(now())
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  chatId     String
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  sender_id  String
+  text       String
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+}
+
+// --- LOGS & UTILIDADES ---
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  accion      String
+  descripcion String
+  ip_address  String?
+  fecha       DateTime @default(now())
+}
+
+model File {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  nombre_archivo String
+  url_archivo    String
+  file_hash      String
+  tipo_archivo   String
+  fecha_subida   DateTime @default(now())
+}
+
+model Notificacion {
+  id      String   @id @default(uuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  mensaje String
+  leida   Boolean  @default(false)
+  fecha   DateTime @default(now())
+}
+
+model Recommendation {
+  id                   String   @id @default(uuid())
+  producto_base_id     String
+  producto             Product  @relation(fields: [producto_base_id], references: [id])
+  nombre_producto      String
+  precio               Decimal
+  categoria            String
+  imagenUrl            String
+  tipo                 String   @default("Cafeteria")
+  calorias             Int      @default(0)
+  score_relevancia     Float
+  hora_prediccion      Int
+  ultima_actualizacion DateTime @default(now())
+
+  @@unique([producto_base_id, hora_prediccion]) // ESTA LÍNEA ES LA CLAVE
+}
