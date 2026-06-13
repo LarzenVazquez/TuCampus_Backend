@@ -50,6 +50,7 @@ export const register = async (req: Request, res: Response) => {
       userId: newUser.id,
     });
   } catch (error: any) {
+    console.error("❌ ERROR REGISTRO:", error);
     res
       .status(500)
       .json({ message: "Error al registrar", error: error.message });
@@ -68,7 +69,8 @@ export const verifyEmail = async (req: Request, res: Response) => {
       data: { email_verificado: true },
     });
     res.json({ message: "¡Correo verificado!" });
-  } catch {
+  } catch (error: any) {
+    console.error("❌ ERROR VERIFY EMAIL:", error);
     res.status(400).json({ error: "El enlace expiró o es inválido." });
   }
 };
@@ -91,6 +93,9 @@ export const login = async (req: Request, res: Response) => {
         },
       },
     );
+
+    console.log("🔐 Captcha response:", captchaRes.data);
+
     if (!captchaRes.data.success)
       return res.status(401).json({ message: "Captcha fallido" });
 
@@ -136,6 +141,7 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
+    console.error("❌ ERROR LOGIN:", error);
     res
       .status(500)
       .json({ message: "Error al iniciar sesión", error: error.message });
@@ -176,8 +182,9 @@ export const uploadSecureFile = async (req: Request, res: Response) => {
     fs.unlinkSync(authReq.file.path);
     res.json({ status: "success", url: imgbbRes.data.data.url });
   } catch (error: any) {
+    console.error("❌ ERROR UPLOAD:", error);
     if (authReq.file) fs.unlinkSync(authReq.file.path);
-    res.status(500).json({ message: "Error al subir" });
+    res.status(500).json({ message: "Error al subir", error: error.message });
   }
 };
 
@@ -237,40 +244,51 @@ export const changePassword = async (req: Request, res: Response) => {
       data: { password: hashedNewPassword },
     });
     res.json({ message: "Contraseña actualizada" });
-  } catch {
-    res.status(500).json({ message: "Error interno" });
+  } catch (error: any) {
+    console.error("❌ ERROR CHANGE PASSWORD:", error);
+    res.status(500).json({ message: "Error interno", error: error.message });
   }
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {
-  const { email } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (user) {
-    const resetToken = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1h" },
-    );
-    await sendEmail(
-      email,
-      "Recuperación",
-      `<a href=".../${resetToken}">Reset</a>`,
-    );
+  try {
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const resetToken = jwt.sign(
+        { id: user.id },
+        process.env.JWT_SECRET as string,
+        { expiresIn: "1h" },
+      );
+      await sendEmail(
+        email,
+        "Recuperación",
+        `<a href=".../${resetToken}">Reset</a>`,
+      );
+    }
+    res.json({ message: "Correo enviado si existe la cuenta." });
+  } catch (error: any) {
+    console.error("❌ ERROR FORGOT PASSWORD:", error);
+    res.status(500).json({ message: "Error interno", error: error.message });
   }
-  res.json({ message: "Correo enviado si existe la cuenta." });
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  const { token, newPassword } = req.body;
-  const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-    id: string;
-  };
-  const hashed = await bcrypt.hash(newPassword, 10);
-  await prisma.user.update({
-    where: { id: decoded.id },
-    data: { password: hashed },
-  });
-  res.json({ message: "Contraseña restablecida" });
+  try {
+    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: decoded.id },
+      data: { password: hashed },
+    });
+    res.json({ message: "Contraseña restablecida" });
+  } catch (error: any) {
+    console.error("❌ ERROR RESET PASSWORD:", error);
+    res.status(500).json({ message: "Error interno", error: error.message });
+  }
 };
 
 export const authController = {

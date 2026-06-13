@@ -6,7 +6,7 @@ import path from "path";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
-// Importación de rutas (Ajustadas a los nuevos archivos .ts)
+// Importación de rutas
 import authRoutes from "./src/api/routes/authRoutes";
 import userRoutes from "./src/api/routes/userRoutes";
 import adminRoutes from "./src/api/routes/adminRoutes";
@@ -21,24 +21,37 @@ dotenv.config();
 
 const app: Application = express();
 
-// --- MIDDLEWARES GLOBALES ---
+// --- RATE LIMITERS ---
+
+// Limiter general: 100 peticiones cada 15 minutos para todas las rutas
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: "Demasiadas peticiones, intente más tarde." },
 });
 
+// Limiter estricto para auth: 10 intentos cada 15 minutos (anti fuerza bruta)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: "Demasiados intentos de acceso, intente en 15 minutos." },
+});
+
+// --- MIDDLEWARES GLOBALES ---
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Limiter general aplicado ANTES de todas las rutas
+app.use(limiter);
+
 // Archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // --- DEFINICIÓN DE ENDPOINTS ---
-
-app.use("/api/auth", authRoutes);
+// Auth con limiter estricto para proteger login y registro
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -56,8 +69,6 @@ app.get("/api/ping", (req: Request, res: Response) => {
     timestamp: new Date(),
   });
 });
-
-app.use("/api/", limiter);
 
 // Manejo de errores 404
 app.use((req: Request, res: Response) => {
