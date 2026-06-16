@@ -1,6 +1,7 @@
 /// <reference path="./src/types/index.ts" />
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
 import rateLimit from "express-rate-limit";
@@ -22,15 +23,12 @@ dotenv.config();
 const app: Application = express();
 
 // --- RATE LIMITERS ---
-
-// Limiter general: 100 peticiones cada 15 minutos para todas las rutas
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: "Demasiadas peticiones, intente más tarde." },
 });
 
-// Limiter estricto para auth: 10 intentos cada 15 minutos (anti fuerza bruta)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -38,19 +36,40 @@ const authLimiter = rateLimit({
 });
 
 // --- MIDDLEWARES GLOBALES ---
-app.use(cors());
+
+// Helmet: configura headers HTTP de seguridad automáticamente
+// Incluye: Content-Security-Policy, X-Frame-Options, Strict-Transport-Security, etc.
+app.use(helmet());
+
+// CORS restrictivo: solo permite peticiones desde los orígenes autorizados
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tu-campus-frontend.vercel.app",
+  process.env.FRONTEND_URL || "",
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origen no permitido por política CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Limiter general aplicado ANTES de todas las rutas
 app.use(limiter);
 
-// Archivos estáticos
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // --- DEFINICIÓN DE ENDPOINTS ---
-// Auth con limiter estricto para proteger login y registro
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
@@ -70,12 +89,10 @@ app.get("/api/ping", (req: Request, res: Response) => {
   });
 });
 
-// Manejo de errores 404
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
-// Manejo de errores 500
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("Error detectado:", err.stack);
   res.status(500).json({ error: "Ocurrió un error interno en el servidor" });

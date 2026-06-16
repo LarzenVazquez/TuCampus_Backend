@@ -6,7 +6,8 @@ import crypto from "crypto";
 import fs from "fs";
 import axios from "axios";
 import FormData from "form-data";
-const { authenticator } = require("otplib"); // 1. IMPORTACIÓN DE OTPLIB
+const otplib = require("otplib");
+const authenticator = otplib.authenticator;
 import prisma from "../../lib/prismaClient";
 import { decryptrsa, getpublickey } from "../../utils/cryptoHelper";
 import { sendEmail } from "../../lib/emailService";

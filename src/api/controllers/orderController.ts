@@ -108,6 +108,13 @@ export const orderController = {
   createPreference: async (req: Request, res: Response): Promise<void> => {
     try {
       const { items } = req.body;
+
+      // Recalcular precios desde la BD, nunca confiar en el cliente (A08 OWASP)
+      const productIds = items.map((i: any) => i.productId);
+      const productosDB = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+      });
+
       await prisma.$transaction(async (tx) => {
         for (const item of items) {
           const product = await tx.product.updateMany({
@@ -128,12 +135,17 @@ export const orderController = {
       const preference = new Preference(client);
       const result = await preference.create({
         body: {
-          items: items.map((i: any) => ({
-            title: i.nombre,
-            unit_price: Number(i.precio),
-            quantity: i.cantidad,
-            currency_id: "MXN",
-          })),
+          items: items.map((i: any) => {
+            // Precio siempre de la BD, nunca del cliente
+            const productoDB = productosDB.find((p) => p.id === i.productId);
+            const precioReal = Number(productoDB?.precio || i.precio);
+            return {
+              title: i.nombre,
+              unit_price: precioReal,
+              quantity: i.cantidad,
+              currency_id: "MXN",
+            };
+          }),
           back_urls: {
             success: `${baseURL}/store/confirmacion.html`,
             failure: `${baseURL}/store/carrito.html`,

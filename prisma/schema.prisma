@@ -52,13 +52,13 @@ model UserFile {
 }
 
 model Session {
+  @@schema("auth")
   id         String   @id @default(uuid())
   token      String   @unique
   expira_en  DateTime
   userId     String
   user       User     @relation(fields: [userId], references: [id])
 }
-
 // --- ESQUEMA BUSINESS (Market, Productos, Pedidos y Logs) ---
 
 model Product {
