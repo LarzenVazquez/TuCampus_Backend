@@ -6,7 +6,8 @@ import {
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
-} from "../../middlewares/Validationmiddleware";
+  validateVerify2FA, // Importamos la nueva validación
+} from "../../middlewares/validationMiddleware";
 import multer from "multer";
 
 const router = Router();
@@ -16,8 +17,16 @@ const upload = multer({ dest: "uploads/profiles/" });
 router.get("/public-key", authController.getPublicKeyEndpoint);
 router.post("/register", validateRegister, authController.register);
 router.post("/login", validateLogin, authController.login);
-router.post("/forgot-password", validateForgotPassword, authController.forgotPassword);
-router.post("/reset-password", validateResetPassword, authController.resetPassword);
+router.post(
+  "/forgot-password",
+  validateForgotPassword,
+  authController.forgotPassword,
+);
+router.post(
+  "/reset-password",
+  validateResetPassword,
+  authController.resetPassword,
+);
 router.get("/verify-email", authController.verifyEmail);
 
 // 2. Rutas Protegidas (Requieren verifyToken)
@@ -34,5 +43,9 @@ router.post(
 
 // Gestión de seguridad
 router.put("/change-password", verifyToken, authController.changePassword);
+
+router.post("/verify-2fa", validateVerify2FA, authController.verify2FA);
+
+router.post("/setup-2fa", verifyToken, authController.setup2FA);
 
 export default router;

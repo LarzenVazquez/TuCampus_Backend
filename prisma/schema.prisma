@@ -22,6 +22,10 @@ model User {
   email_verificado    Boolean  @default(false)
   created_at          DateTime @default(now())
 
+  // --- CAMPOS DE DOBLE FACTOR DE AUTENTICACIÓN (2FA) ---
+  two_factor_enabled  Boolean  @default(false)
+  two_factor_secret   String?  // Almacena el secreto Base32 del protocolo TOTP
+
   // Relaciones
   productos      Product[]      @relation("VendedorRelation")
   archivos       File[]
@@ -48,12 +52,11 @@ model UserFile {
 }
 
 model Session {
-  @@schema("auth")
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expira_en DateTime
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  token      String   @unique
+  expira_en  DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 // --- ESQUEMA BUSINESS (Market, Productos, Pedidos y Logs) ---
@@ -89,7 +92,7 @@ model Market {
   precio           Decimal
   categoria        String   @default("Otros")
   imagenes         String[]
-  estatus          String   @default("pendiente")
+  estatus          String   @default("pendiente") // pendiente, activo, vendido, rechazado, bando
   motivoRechazo    String?
   fechaPublicacion DateTime @default(now())
   chats            Chat[]
