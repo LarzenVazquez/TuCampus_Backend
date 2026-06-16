@@ -6,12 +6,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
+      "./node_modules/@types"
+    ],
+    "types": [
+      "jest",
+      "node"
     ]
   },
   "include": [
     "src/**/*",
-    "src/types/express.d.ts"
+    "prisma.config.ts"
   ]
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import forge from "node-forge";
 import crypto from "crypto";
@@ -80,6 +80,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv, captchaToken } =
       req.body;
+
     if (!captchaToken)
       return res.status(400).json({ message: "Captcha requerido." });
 
@@ -93,8 +94,6 @@ export const login = async (req: Request, res: Response) => {
         },
       },
     );
-
-    console.log("🔐 Captcha response:", captchaRes.data);
 
     if (!captchaRes.data.success)
       return res.status(401).json({ message: "Captcha fallido" });
@@ -119,8 +118,10 @@ export const login = async (req: Request, res: Response) => {
     if (!user || !(await bcrypt.compare(passwordPlana, user.password))) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
-    if (!user.email_verificado)
+
+    if (!user.email_verificado) {
       return res.status(403).json({ message: "Verifica tu correo" });
+    }
 
     const token = jwt.sign(
       { id: user.id, rol: user.rol, email: user.email },
@@ -128,7 +129,8 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "24h" },
     );
 
-    res.json({
+    return res.status(200).json({
+      // Aseguramos el status 200 explícito
       status: "success",
       token,
       user: {
@@ -136,13 +138,17 @@ export const login = async (req: Request, res: Response) => {
         nombre: user.nombre,
         rol: user.rol,
         email: user.email,
-        fotoUrl: user.archivos[0]?.url_archivo || null,
+        // Protegemos el acceso al índice 0
+        fotoUrl:
+          user.archivos && user.archivos.length > 0
+            ? user.archivos[0].url_archivo
+            : null,
         vendedor_verificado: user.vendedor_verificado,
       },
     });
   } catch (error: any) {
-    console.error("❌ ERROR LOGIN:", error);
-    res
+    console.error("❌ ERROR LOGIN DETALLADO:", error);
+    return res
       .status(500)
       .json({ message: "Error al iniciar sesión", error: error.message });
   }

@@ -11,6 +11,7 @@ if (apiKey && apiKey.startsWith("SG.")) {
   );
 }
 
+// AQUÍ ESTABA EL ERROR: Agrega 'export'
 export const sendEmail = async (to: string, subject: string, html: string) => {
   if (!apiKey || !apiKey.startsWith("SG.")) {
     console.log(`Simulando envío de correo a ${to}: ${subject}`);
