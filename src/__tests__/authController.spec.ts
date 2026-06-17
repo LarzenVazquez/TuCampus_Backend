@@ -1,16 +1,44 @@
+jest.mock("otplib", () => {
+  const mockCheck = jest.fn();
+  return {
+    authenticator: {
+      generateSecret: jest.fn(),
+      keyuri: jest.fn(),
+      verify: mockCheck, // Por si usas verify
+      check: mockCheck, // Tu controlador está llamando a este método
+    },
+  };
+});
+
+// Mockear la subdependencia problemática para que Jest ni siquiera intente leerla en el árbol de dependencias
+jest.mock(
+  "@scure/base",
+  () => ({
+    utils: {
+      freeze: (obj: any) => obj,
+    },
+  }),
+  { virtual: true },
+);
+
 import { Request, Response } from "express";
-import { authController } from "../api/controllers/authController";
 import prisma from "../lib/prismaClient";
 import axios from "axios";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+
+// Ahora importamos el controlador de manera segura
+import { authController } from "../api/controllers/authController";
+
+// Traemos el mock para manipular sus retornos en los tests de 2FA
+const { authenticator } = require("otplib");
 
 jest.mock("../lib/emailService", () => ({
   sendEmail: jest.fn().mockResolvedValue(true),
 }));
 jest.mock("fs", () => ({
   readFileSync: jest.fn().mockReturnValue("buffer"),
-  unlinkSync: jest.fn(), // por defecto no hace nada, no tira error
+  unlinkSync: jest.fn(),
 }));
 jest.mock("bcryptjs");
 jest.mock("axios");
@@ -122,6 +150,7 @@ describe("Auth Controller", () => {
       email: "a@a.com",
       password: "hashed",
       email_verificado: true,
+      two_factor_enabled: false,
       vendedor_verificado: false,
       archivos: [{ url_archivo: "foto.jpg" }],
     });
@@ -140,9 +169,9 @@ describe("Auth Controller", () => {
       } as any,
       mockRes as any,
     );
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    // controller llama res.json() sin .status(200) explícito
     expect(mockRes.json).toHaveBeenCalledWith(
-      expect.objectContaining({ token: "fake-token" }),
+      expect.objectContaining({ status: "success", token: "fake-token" }),
     );
   });
 
@@ -156,6 +185,7 @@ describe("Auth Controller", () => {
       password: "hashed",
       email_verificado: true,
       vendedor_verificado: false,
+      two_factor_enabled: false,
       archivos: [],
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -173,11 +203,44 @@ describe("Auth Controller", () => {
       } as any,
       mockRes as any,
     );
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    // controller llama res.json() sin .status(200) explícito
     expect(mockRes.json).toHaveBeenCalledWith(
       expect.objectContaining({
+        status: "success",
         user: expect.objectContaining({ fotoUrl: null }),
       }),
+    );
+  });
+
+  it("Login: usuario con 2FA activo → respuesta 2FA_REQUIRED", async () => {
+    (axios.post as jest.Mock).mockResolvedValue({ data: { success: true } });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: "1",
+      nombre: "Test",
+      rol: "Al",
+      email: "a@a.com",
+      password: "hashed",
+      email_verificado: true,
+      two_factor_enabled: true,
+      vendedor_verificado: false,
+      archivos: [],
+    });
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+    await authController.login(
+      {
+        body: {
+          captchaToken: "t",
+          email: "a@a.com",
+          encryptedPassword: "x",
+          encryptedAesKey: "k",
+          iv: "i",
+        },
+      } as any,
+      mockRes as any,
+    );
+    expect(mockRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "2FA_REQUIRED" }),
     );
   });
 
@@ -460,6 +523,9 @@ describe("Auth Controller", () => {
       message: "Correo enviado si existe la cuenta.",
     });
   });
+
+  // ─── COBERTURA FINAL ──────────────────────────────────────────────────────
+
   it("getPublicKeyEndpoint: devuelve publicKey", () => {
     authController.getPublicKeyEndpoint({} as any, mockRes as any);
     expect(mockRes.json).toHaveBeenCalledWith(
@@ -476,6 +542,7 @@ describe("Auth Controller", () => {
       email: "juan@test.com",
       password: "hashed",
       email_verificado: true,
+      two_factor_enabled: false,
       vendedor_verificado: false,
       archivos: [],
     });
@@ -494,7 +561,7 @@ describe("Auth Controller", () => {
       } as any,
       mockRes as any,
     );
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    // controller llama res.json() sin .status(200) explícito
     expect(mockRes.json).toHaveBeenCalledWith(
       expect.objectContaining({ status: "success", token: "tok" }),
     );
@@ -525,6 +592,83 @@ describe("Auth Controller", () => {
       message: "Contraseña actualizada",
     });
   });
-});
 
-// ─── COBERTURA FINAL ──────────────────────────────────────────────────────
+  it("setup2FA: sin usuario en sesión → 401", async () => {
+    await authController.setup2FA({} as any, mockRes as any);
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+  });
+
+  it("setup2FA: fallo interno al guardar datos en prisma → 500", async () => {
+    authenticator.generateSecret.mockReturnValue("SECRET32BASE");
+    authenticator.keyuri.mockReturnValue("otpauth://totp/TuCampus");
+    (prisma.user.update as jest.Mock).mockRejectedValue(
+      new Error("Prisma crash"),
+    );
+
+    await authController.setup2FA(
+      { user: { id: "1", email: "a@a.com" } } as any,
+      mockRes as any,
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("setup2FA: configuración correcta → 200 con secreto y uri", async () => {
+    authenticator.generateSecret.mockReturnValue("SECRET32BASE");
+    authenticator.keyuri.mockReturnValue("otpauth://totp/TuCampus");
+    (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+    await authController.setup2FA(
+      { user: { id: "1", email: "a@a.com" } } as any,
+      mockRes as any,
+    );
+    expect(mockRes.json).toHaveBeenCalledWith({
+      secret: "SECRET32BASE",
+      otpauthUrl: "otpauth://totp/TuCampus",
+    });
+  });
+
+  // ─── VERIFY 2FA ───────────────────────────────────────────────────────────
+
+  it("verify2FA: token ausente o verificación de otplib fallida → 400", async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: "1",
+      two_factor_secret: "SECRET",
+    });
+    authenticator.verify.mockReturnValue(false);
+
+    await authController.verify2FA(
+      { user: { id: "1" }, body: { token: "123456" } } as any,
+      mockRes as any,
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+  });
+
+  it("verify2FA: error de infraestructura interno → 500", async () => {
+    (prisma.user.findUnique as jest.Mock).mockRejectedValue(
+      new Error("Database offline"),
+    );
+
+    await authController.verify2FA(
+      { user: { id: "1" }, body: { token: "123456" } } as any,
+      mockRes as any,
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+  });
+
+  it("verify2FA: token correcto y activación de doble factor completada → 200", async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: "1",
+      two_factor_secret: "SECRET",
+    });
+    authenticator.verify.mockReturnValue(true);
+    (prisma.user.update as jest.Mock).mockResolvedValue({});
+
+    await authController.verify2FA(
+      { user: { id: "1" }, body: { token: "123456" } } as any,
+      mockRes as any,
+    );
+    expect(mockRes.json).toHaveBeenCalledWith({
+      message: "Doble factor de autenticación activado correctamente",
+    });
+  });
+});

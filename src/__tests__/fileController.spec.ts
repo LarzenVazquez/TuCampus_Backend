@@ -26,19 +26,19 @@ describe("File Controller", () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
   });
 
-  it("debería fallar si no hay archivo en la request", async () => {
+  it("deberia fallar si no hay archivo en la request", async () => {
     mockReq = { file: undefined };
     await uploadProfileImage(mockReq as Request, mockRes as Response);
     expect(mockRes.status).toHaveBeenCalledWith(400);
   });
 
-  it("debería fallar si el usuario no está autenticado", async () => {
+  it("deberia fallar si el usuario no esta autenticado", async () => {
     mockReq = { file: { path: "test.jpg" } as any, user: undefined };
     await uploadProfileImage(mockReq as Request, mockRes as Response);
     expect(mockRes.status).toHaveBeenCalledWith(401);
   });
 
-  it("debería subir imagen a ImgBB y guardar en DB", async () => {
+  it("deberia subir imagen a ImgBB y guardar en DB", async () => {
     mockReq = {
       file: { path: "test.jpg", originalname: "perfil.jpg" } as any,
       user: { id: "u1" } as any,
@@ -55,7 +55,7 @@ describe("File Controller", () => {
     expect(fs.unlinkSync).toHaveBeenCalledWith("test.jpg");
   });
 
-  it("debería manejar errores de API de terceros y limpiar archivo", async () => {
+  it("deberia manejar errores de API de terceros y limpiar archivo", async () => {
     mockReq = {
       file: { path: "test.jpg" } as any,
       user: { id: "u1" } as any,

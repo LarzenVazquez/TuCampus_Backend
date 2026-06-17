@@ -6,6 +6,7 @@ import crypto from "crypto";
 import fs from "fs";
 import axios from "axios";
 import FormData from "form-data";
+const { authenticator } = require("otplib"); // 1. IMPORTACIÓN DE OTPLIB
 import prisma from "../../lib/prismaClient";
 import { decryptrsa, getpublickey } from "../../utils/cryptoHelper";
 import { sendEmail } from "../../lib/emailService";
@@ -80,7 +81,6 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv, captchaToken } =
       req.body;
-
     if (!captchaToken)
       return res.status(400).json({ message: "Captcha requerido." });
 
@@ -94,6 +94,8 @@ export const login = async (req: Request, res: Response) => {
         },
       },
     );
+
+    console.log("🔐 Captcha response:", captchaRes.data);
 
     if (!captchaRes.data.success)
       return res.status(401).json({ message: "Captcha fallido" });
@@ -118,19 +120,26 @@ export const login = async (req: Request, res: Response) => {
     if (!user || !(await bcrypt.compare(passwordPlana, user.password))) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
-
-    if (!user.email_verificado) {
+    if (!user.email_verificado)
       return res.status(403).json({ message: "Verifica tu correo" });
+
+    // 2. INTERCEPCIÓN DEL FLUJO PARA CONTROLAR EL DOBLE FACTOR
+    if (user.two_factor_enabled) {
+      return res.json({
+        status: "2FA_REQUIRED",
+        message: "Se requiere segundo factor de autenticación.",
+        userId: user.id,
+      });
     }
 
+    // Flujo normal sin 2FA activo
     const token = jwt.sign(
       { id: user.id, rol: user.rol, email: user.email },
       process.env.JWT_SECRET as string,
       { expiresIn: "24h" },
     );
 
-    return res.status(200).json({
-      // Aseguramos el status 200 explícito
+    res.json({
       status: "success",
       token,
       user: {
@@ -138,19 +147,113 @@ export const login = async (req: Request, res: Response) => {
         nombre: user.nombre,
         rol: user.rol,
         email: user.email,
-        // Protegemos el acceso al índice 0
-        fotoUrl:
-          user.archivos && user.archivos.length > 0
-            ? user.archivos[0].url_archivo
-            : null,
+        fotoUrl: user.archivos[0]?.url_archivo || null,
         vendedor_verificado: user.vendedor_verificado,
       },
     });
   } catch (error: any) {
-    console.error("❌ ERROR LOGIN DETALLADO:", error);
-    return res
+    console.error("❌ ERROR LOGIN:", error);
+    res
       .status(500)
       .json({ message: "Error al iniciar sesión", error: error.message });
+  }
+};
+
+/* 4.5 ENDPOINTS DE CONFIGURACIÓN Y VERIFICACIÓN 2FA */
+
+// Activa el servicio y genera el código base para la aplicación móvil
+export const setup2FA = async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+  try {
+    if (!authReq.user)
+      return res.status(401).json({ message: "No autorizado" });
+
+    // Genera clave secreta Base32 única
+    const secret = authenticator.generateSecret();
+
+    // Construye el URI compatible con Google Authenticator
+    const otpauthUrl = authenticator.keyuri(
+      authReq.user.email,
+      "TuCampus",
+      secret,
+    );
+
+    // Persiste el secreto de forma temporal en el usuario
+    await prisma.user.update({
+      where: { id: authReq.user.id },
+      data: { two_factor_secret: secret },
+    });
+
+    res.json({
+      secret,
+      otpauthUrl, // Este string es el que el frontend usa para pintar el código QR
+    });
+  } catch (error: any) {
+    console.error("❌ ERROR SETUP 2FA:", error);
+    res
+      .status(500)
+      .json({ message: "Error al configurar 2FA", error: error.message });
+  }
+};
+
+// Verifica el código dinámico para completar el inicio de sesión
+export const verify2FA = async (req: Request, res: Response) => {
+  try {
+    const { userId, code } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { archivos: true },
+    });
+
+    if (!user || !user.two_factor_secret) {
+      return res
+        .status(400)
+        .json({ message: "El servicio de 2FA no está activo o configurado." });
+    }
+
+    // Validación matemática simétrica contra la marca de tiempo (ventana +/- 30 segundos)
+    const isValid = authenticator.check(code, user.two_factor_secret);
+
+    if (!isValid) {
+      return res
+        .status(401)
+        .json({ message: "Código dinámico incorrecto o expirado." });
+    }
+
+    // Si es válido por primera vez durante la configuración, asegura el flag de activación
+    if (!user.two_factor_enabled) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { two_factor_enabled: true },
+      });
+    }
+
+    // Generación final del JWT firmado
+    const token = jwt.sign(
+      { id: user.id, rol: user.rol, email: user.email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "24h" },
+    );
+
+    res.json({
+      status: "success",
+      token,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        rol: user.rol,
+        email: user.email,
+        fotoUrl: user.archivos[0]?.url_archivo || null,
+        vendedor_verificado: user.vendedor_verificado,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ ERROR VERIFY 2FA:", error);
+    res.status(500).json({
+      message: "Error interno al validar factor",
+      error: error.message,
+    });
   }
 };
 
@@ -302,6 +405,8 @@ export const authController = {
   register,
   verifyEmail,
   login,
+  setup2FA, // Agregado al objeto exportador
+  verify2FA, // Agregado al objeto exportador
   uploadSecureFile,
   getProfile,
   logout,
