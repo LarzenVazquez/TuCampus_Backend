@@ -26,14 +26,15 @@ export const productController = {
       });
       res.status(200).json(productos);
     } catch (error: any) {
-      res.status(500).json({ message: "Error al filtrar productos" });
+      res
+        .status(500)
+        .json({ message: "Error al filtrar productos", error: error.message });
     }
   },
 
   createProduct: async (req: Request, res: Response): Promise<void> => {
     try {
-      const tipoAsignado =
-        req.user!.rol === "A_C" ? "Cafeteria" : "Marketplace";
+      const tipoAsignado = req.user.rol === "A_C" ? "Cafeteria" : "Marketplace";
       const nuevoProducto = await prisma.product.create({
         data: {
           ...req.body,
@@ -41,7 +42,7 @@ export const productController = {
           stock: Number(req.body.stock),
           calorias: Number(req.body.calorias) || 0,
           tipo: tipoAsignado,
-          vendedorId: req.user!.id,
+          vendedorId: req.user.id,
         },
       });
       res
@@ -66,7 +67,9 @@ export const productController = {
       });
       res.status(200).json(productos);
     } catch (error: any) {
-      res.status(500).json({ message: "Error en la búsqueda" });
+      res
+        .status(500)
+        .json({ message: "Error en la búsqueda", error: error.message });
     }
   },
 
@@ -80,7 +83,9 @@ export const productController = {
       }
       res.json(producto);
     } catch (error: any) {
-      res.status(500).json({ message: "Error al buscar" });
+      res
+        .status(500)
+        .json({ message: "Error al buscar", error: error.message });
     }
   },
 
@@ -94,11 +99,10 @@ export const productController = {
         return;
       }
 
-      // Validamos permisos
       const canEdit =
-        producto.vendedorId === req.user!.id ||
-        (producto.tipo === "Cafeteria" && req.user!.rol === "A_C") ||
-        (producto.tipo === "Marketplace" && req.user!.rol === "A");
+        producto.vendedorId === req.user.id ||
+        (producto.tipo === "Cafeteria" && req.user.rol === "A_C") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "A");
 
       if (!canEdit) {
         res.status(403).json({ message: "No tienes permiso" });
@@ -111,7 +115,9 @@ export const productController = {
       });
       res.json({ message: "Actualizado con éxito", product: actualizado });
     } catch (error: any) {
-      res.status(400).json({ message: "Error al actualizar" });
+      res
+        .status(400)
+        .json({ message: "Error al actualizar", error: error.message });
     }
   },
 
@@ -126,9 +132,9 @@ export const productController = {
       }
 
       const canDelete =
-        producto.vendedorId === req.user!.id ||
-        (producto.tipo === "Cafeteria" && req.user!.rol === "A_C") ||
-        (producto.tipo === "Marketplace" && req.user!.rol === "A");
+        producto.vendedorId === req.user.id ||
+        (producto.tipo === "Cafeteria" && req.user.rol === "A_C") ||
+        (producto.tipo === "Marketplace" && req.user.rol === "A");
 
       if (!canDelete) {
         res.status(403).json({ message: "No tienes permiso" });
@@ -138,7 +144,9 @@ export const productController = {
       await prisma.product.delete({ where: { id } });
       res.json({ message: "Eliminado correctamente" });
     } catch (error: any) {
-      res.status(500).json({ message: "Error al eliminar" });
+      res
+        .status(500)
+        .json({ message: "Error al eliminar", error: error.message });
     }
   },
 };

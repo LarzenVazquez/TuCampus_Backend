@@ -5,7 +5,7 @@ export const chatController = {
   getOrCreateChat: async (req: Request, res: Response): Promise<void> => {
     try {
       const { vendedor_id, producto_id } = req.body;
-      const comprador_id = req.user!.id;
+      const comprador_id = req.user.id;
 
       if (comprador_id === vendedor_id) {
         res.status(400).json({ message: "Es tu propio producto" });
@@ -49,7 +49,7 @@ export const chatController = {
   sendMessage: async (req: Request, res: Response): Promise<void> => {
     try {
       const { chat_id, text } = req.body;
-      const sender_id = req.user!.id;
+      const sender_id = req.user.id;
 
       const [msg] = await prisma.$transaction([
         prisma.message.create({
@@ -71,7 +71,7 @@ export const chatController = {
 
   getMyChats: async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId = req.user!.id;
+      const userId = req.user.id;
       const chats = await prisma.chat.findMany({
         where: { OR: [{ compradorId: userId }, { vendedorId: userId }] },
         include: {
@@ -92,7 +92,7 @@ export const chatController = {
     try {
       const { chat_id } = req.params;
       const chatId = Array.isArray(chat_id) ? chat_id[0] : chat_id;
-      const userId = req.user!.id;
+      const userId = req.user.id;
 
       const chat = await prisma.chat.findFirst({
         where: {

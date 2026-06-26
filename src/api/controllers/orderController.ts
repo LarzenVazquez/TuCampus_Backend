@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 
 const baseURL = process.env.FRONTEND_URL;
@@ -49,8 +49,10 @@ export const orderController = {
         include: { items: true },
       });
       res.json(cart || { items: [], total: 0 });
-    } catch (error) {
-      res.status(500).json({ message: "Error al obtener carrito" });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error al obtener carrito", error: error.message });
     }
   },
 
@@ -109,7 +111,6 @@ export const orderController = {
     try {
       const { items } = req.body;
 
-      // Recalcular precios desde la BD, nunca confiar en el cliente (A08 OWASP)
       const productIds = items.map((i: any) => i.productId);
       const productosDB = await prisma.product.findMany({
         where: { id: { in: productIds } },
@@ -130,13 +131,12 @@ export const orderController = {
       });
 
       const client = new MercadoPagoConfig({
-        accessToken: process.env.MP_ACCESS_TOKEN!,
+        accessToken: process.env.MP_ACCESS_TOKEN,
       });
       const preference = new Preference(client);
       const result = await preference.create({
         body: {
           items: items.map((i: any) => {
-            // Precio siempre de la BD, nunca del cliente
             const productoDB = productosDB.find((p) => p.id === i.productId);
             const precioReal = Number(productoDB?.precio || i.precio);
             return {
@@ -175,21 +175,25 @@ export const orderController = {
         data: { status: "LISTO" },
       });
       res.json({ message: "Orden lista", order });
-    } catch (error) {
-      res.status(500).json({ message: "Error al actualizar" });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error al actualizar", error: error.message });
     }
   },
 
   verifyOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const { qrData } = req.body;
-      const order = await prisma.order.updateMany({
+      await prisma.order.updateMany({
         where: { qrCodeData: qrData, status: { in: ["PAGADO", "LISTO"] } },
         data: { status: "ENTREGADO" },
       });
       res.json({ message: "Entrega confirmada" });
-    } catch (error) {
-      res.status(500).json({ message: "Error al verificar" });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error al verificar", error: error.message });
     }
   },
 

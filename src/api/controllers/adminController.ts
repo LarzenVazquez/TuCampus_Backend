@@ -38,7 +38,7 @@ export const adminController = {
         }),
         prisma.activityLog.create({
           data: {
-            userId: req.user!.id,
+            userId: req.user.id, // CORRECCIÓN L41: Se removió la aserción '!' innecesaria
             accion: "ADMIN_UPDATE",
             descripcion: `Update User ${id}: Rol=${rol}, Verif=${verificado}`,
             ip_address: req.ip,
@@ -66,7 +66,7 @@ export const adminController = {
         }),
         prisma.activityLog.create({
           data: {
-            userId: req.user!.id,
+            userId: req.user.id, // CORRECCIÓN L69: Se removió la aserción '!' innecesaria
             accion: "ADMIN_VERIFY",
             descripcion: `Vendedor verificado ID: ${id}. Rol cambiado a A_V`,
             ip_address: req.ip,
@@ -108,7 +108,7 @@ export const adminController = {
         prisma.user.delete({ where: { id: userId } }),
         prisma.activityLog.create({
           data: {
-            userId: req.user!.id,
+            userId: req.user.id, // CORRECCIÓN L111: Se removió la aserción '!' innecesaria
             accion: "ADMIN_DELETE",
             descripcion: `Eliminó al usuario ID: ${userId}`,
             ip_address: req.ip,

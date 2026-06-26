@@ -82,9 +82,14 @@ const ask = async (req: Request, res: Response): Promise<void> => {
   try {
     const { prompt } = req.query as { prompt: string };
     const horaActual = getMexicoHour();
-    const presupuesto = prompt?.match(/\d+/)
-      ? parseInt(prompt.match(/\d+/)![0])
-      : 999;
+    let presupuesto = 999;
+    if (prompt) {
+      const regex = /\d+/;
+      const match = regex.exec(prompt);
+      if (match) {
+        presupuesto = Number.parseInt(match[0]);
+      }
+    }
 
     const sugerencias = await prisma.recommendation.findMany({
       where: {

@@ -1,10 +1,8 @@
-import http from "http";
-import { Server, Socket } from "socket.io";
-import os from "os";
+import http from "node:http";
+import { Server } from "socket.io";
 import cron from "node-cron";
 import dotenv from "dotenv";
 import app from "./app";
-// Solo importamos la lógica necesaria, sin conexiones antiguas
 import { train } from "./src/api/controllers/iaController";
 
 dotenv.config();
@@ -18,12 +16,8 @@ const io = new Server(server, {
 
 app.set("io", io);
 
-// ... (tu función getLocalIp y lógica de sockets igual)
-
 async function initialize(): Promise<void> {
   try {
-    // Ya no inicializamos dbSql ni dbNoSql.
-    // Prisma gestiona la conexión de forma automática al hacer la primera query.
     console.log("Servidor: Conectando a servicios...");
 
     const PORT = process.env.PORT || 3000;
@@ -33,7 +27,6 @@ async function initialize(): Promise<void> {
       console.log("WebSockets: Activo");
     });
 
-    // IA: Ejecución programada usando el contexto del ORM
     cron.schedule("0 * * * *", async () => {
       console.log("IA: Iniciando entrenamiento programado");
       try {

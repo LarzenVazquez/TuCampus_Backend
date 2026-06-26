@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import crypto from "crypto";
-import fs from "fs";
+import crypto from "node:crypto";
+import fs from "node:fs";
 import axios from "axios";
 import FormData from "form-data";
 import prisma from "../../lib/prismaClient";

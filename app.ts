@@ -3,7 +3,7 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import path from "path";
+import path from "node:path";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
@@ -35,31 +35,32 @@ const authLimiter = rateLimit({
   message: { error: "Demasiados intentos de acceso, intente en 15 minutos." },
 });
 
-// --- MIDDLEWARES GLOBALES ---
-
-// Helmet: configura headers HTTP de seguridad automáticamente
-// Incluye: Content-Security-Policy, X-Frame-Options, Strict-Transport-Security, etc.
 app.use(helmet());
 
-// CORS restrictivo: solo permite peticiones desde los orígenes autorizados
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://tu-campus-frontend.vercel.app",
-  process.env.FRONTEND_URL || "",
-].filter(Boolean);
+// CORRECCIÓN: Convertido a Set para cumplir con las reglas de SonarQube
+const allowedOrigins = new Set(
+  [
+    "http://localhost:5173",
+    "https://tu-campus-frontend.vercel.app",
+    process.env.FRONTEND_URL || "",
+  ].filter(Boolean),
+);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Origen no permitido por política CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // CORRECCIÓN: Se utiliza .has() en lugar de .includes() para evaluar el Set
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Origen no permitido por política CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 app.use(morgan("dev"));
 app.use(express.json());

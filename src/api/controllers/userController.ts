@@ -30,7 +30,7 @@ export const uploadProfilePic = async (
 ): Promise<void> => {
   try {
     const { fileName, url, hash } = req.body.fileData;
-    const userId = req.user!.id;
+    const userId = req.user.id;
 
     await prisma.$transaction([
       prisma.userFile.create({
@@ -65,8 +65,8 @@ export const updateProfile = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = req.user!.id;
-    const { nombre, telefono } = req.body;
+    const userId = req.user.id;
+    const { nombre } = req.body;
     await prisma.user.update({
       where: { id: userId },
       data: {

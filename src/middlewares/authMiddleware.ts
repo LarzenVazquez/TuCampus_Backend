@@ -6,8 +6,7 @@ export const verifyToken = (
   res: Response,
   next: NextFunction,
 ): void => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     res
@@ -17,7 +16,8 @@ export const verifyToken = (
   }
 
   try {
-    const secret = process.env.JWT_SECRET as string;
+    const secret = process.env.JWT_SECRET || "";
+
     const decoded = jwt.verify(token, secret) as {
       id: string;
       rol: string;
@@ -27,12 +27,13 @@ export const verifyToken = (
 
     req.user = decoded;
     next();
-  } catch (error) {
-    res.status(403).json({ error: "Token inválido o expirado" });
+  } catch (error: any) {
+    res
+      .status(403)
+      .json({ error: "Token inválido o expirado", details: error.message });
   }
 };
 
-// Función privada de utilidad para validar roles
 const checkRole = (
   role: string,
   req: Request,
@@ -40,7 +41,7 @@ const checkRole = (
   next: NextFunction,
 ) => {
   const rol = req.user?.rol?.trim();
-  if (req.user && rol === role) {
+  if (rol === role) {
     next();
   } else {
     res.status(403).json({

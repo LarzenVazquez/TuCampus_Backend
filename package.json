@@ -35,8 +35,9 @@
   "description": "Estrutura de las carpetas\r backend/\r ├── src/\r │   ├── api/                    # Punto de entrada de los servicios\r │   │   ├── auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)\r │   │   │   ├── controllers/\r │   │   │   ├── models/         # userModel.js\r │   │   │   └── routes/\r │   │   └── campus-service/     # DOMINIO: Cafetería y Market (NoSQL)\r │   │       ├── controllers/\r │   │       ├── models/         # productModel.js, orderModel.js\r │   │       └── routes/\r │   ├── config/                 # Configuraciones Globales\r │   │   ├── dbSql.js            # Conexión MySQL\r │   │   └── dbNoSql.js          # Conexión MongoDB\r │   ├── middlewares/            # Compartidos (Auth, Validaciones)\r │   │   ├── authMiddleware.js\r │   │   └── roleMiddleware.js\r │   ├── services/               # Lógica de negocio pesada o externa\r │   │   ├── mailService.js      # Para recuperar contraseña (SQL)\r │   │   └── qrService.js        # Para generar QRs (NoSQL)\r │   └── utils/                  # Helpers comunes\r ├── .env                        # Una sola fuente de verdad\r ├── app.js                      # Une las rutas de ambos servicios\r └── server.js                   # Arranca el corazón del proyecto",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "tsx server.ts",
+    "start": "tsc && node dist/server.js",
+    "sonar": "node sonar-project.js"
   },
   "keywords": [],
   "author": "",
@@ -54,7 +55,9 @@
     "@types/node-forge": "^1.3.14",
     "@types/otplib": "^7.0.0",
     "prisma": "^7.8.0",
+    "sonarqube-scanner": "^4.3.8",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },
   "allowScripts": {
