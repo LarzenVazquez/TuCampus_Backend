@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
 
+interface AuthenticatedRequest extends Request {
+  user?: { id: string; rol: string; email: string; nombre: string };
+}
+
 const ensureString = (val: string | string[] | undefined): string =>
   Array.isArray(val) ? val[0] : val || "";
 
@@ -21,8 +25,11 @@ export const productController = {
   // Menú del día habilitado para beca alimenticia. Solo devuelve los
   // productos que la cocina marcó explícitamente con esMenuBeca=true;
   // así el alumno becado nunca ve (ni puede reclamar) el catálogo completo.
-  getMenuBeca: async (_req: Request, res: Response): Promise<void> => {
+  getMenuBeca: async (req: Request, res: Response): Promise<void> => {
     try {
+      const authReq = req as AuthenticatedRequest;
+      const userId = authReq.user?.id;
+
       const productos = await prisma.product.findMany({
         where: {
           tipo: "Cafeteria",
@@ -31,11 +38,28 @@ export const productController = {
           stock: { gt: 0 },
         },
       });
-      res.status(200).json(productos);
+
+      let yaReclamado = false;
+      if (userId) {
+        const inicioDeHoy = new Date();
+        inicioDeHoy.setHours(0, 0, 0, 0);
+
+        const ordenHoy = await prisma.order.findFirst({
+          where: {
+            userId,
+            tipo: "Beca",
+            fecha: { gte: inicioDeHoy },
+          },
+        });
+        yaReclamado = !!ordenHoy;
+      }
+
+      res.status(200).json({ productos, yaReclamado });
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Error al cargar el menú de beca", error: error.message });
+      res.status(500).json({
+        message: "Error al cargar el menú de beca",
+        error: error.message,
+      });
     }
   },
 

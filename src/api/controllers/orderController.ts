@@ -3,6 +3,10 @@ import prisma from "../../lib/prismaClient";
 import crypto from "crypto";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 
+interface AuthenticatedRequest extends Request {
+  user?: { id: string; rol: string; email: string; nombre: string };
+}
+
 const baseURL = process.env.FRONTEND_URL;
 
 const getUserId = (req: Request): string => {
@@ -33,32 +37,76 @@ const calcularTiempoEstimado = (
 };
 
 export const orderController = {
-  saveCart: async (req: Request, res: Response): Promise<void> => {
+  saveCart: async (req: Request, res: Response): Promise<Response> => {
     try {
       const { items, total } = req.body;
       const userId = getUserId(req);
 
+      if (!userId) {
+        return res.status(401).json({ message: "Usuario no identificado" });
+      }
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "La lista de items es inválida o está vacía" });
+      }
+
+      // 1. Obtener detalles de productos para cumplir con el esquema (nombre, precio)
+      const productIds = items.map((i: any) => i.productId);
+      const productosDB = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+      });
+
+      // 2. Mapear items con los datos requeridos por Prisma
+      const itemsCompletos = items.map((item: any) => {
+        const prod = productosDB.find((p) => p.id === item.productId);
+        if (!prod)
+          throw new Error(
+            `Producto ${item.productId} no encontrado en catálogo`,
+          );
+
+        return {
+          productId: item.productId,
+          cantidad: item.cantidad,
+          nombre: prod.nombre,
+          precio: prod.precio,
+        };
+      });
+
       const existingCart = await prisma.order.findFirst({
         where: { userId, status: "CARRITO" },
       });
-      const cart = await prisma.order.upsert({
-        where: {
-          id: existingCart?.id ?? "none",
-        },
-        create: {
-          userId,
-          total,
-          status: "CARRITO",
-          items: { create: items },
-        },
-        update: {
-          total,
-          items: { deleteMany: {}, create: items },
-        },
-      });
-      res.status(200).json({ message: "Carrito guardado", cart });
+
+      let cart;
+      if (existingCart) {
+        // ACTUALIZAR EXISTENTE
+        cart = await prisma.order.update({
+          where: { id: existingCart.id },
+          data: {
+            total,
+            items: {
+              deleteMany: {},
+              create: itemsCompletos,
+            },
+          },
+        });
+      } else {
+        // CREAR NUEVO
+        cart = await prisma.order.create({
+          data: {
+            userId,
+            total,
+            status: "CARRITO",
+            items: { create: itemsCompletos },
+          },
+        });
+      }
+
+      return res.status(200).json({ message: "Carrito guardado", cart });
     } catch (error: any) {
-      res
+      console.error("DEBUG ERROR SAVE CART:", error);
+      return res
         .status(500)
         .json({ message: "Error al guardar", error: error.message });
     }
@@ -157,7 +205,9 @@ export const orderController = {
       const { productId } = req.body as { productId?: string };
 
       if (!productId) {
-        res.status(400).json({ message: "Selecciona un platillo del menú del día." });
+        res
+          .status(400)
+          .json({ message: "Selecciona un platillo del menú del día." });
         return;
       }
 
@@ -386,6 +436,40 @@ export const orderController = {
       res.json({ message: "Entrega confirmada" });
     } catch (error) {
       res.status(500).json({ message: "Error al verificar" });
+    }
+  },
+
+  getOrdenActiva: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const userId = authReq.user?.id;
+      if (!userId) {
+        res.status(401).json({ message: "No autorizado" });
+        return;
+      }
+
+      const orden = await prisma.order.findFirst({
+        where: {
+          userId,
+          status: { notIn: ["ENTREGADO"] },
+        },
+        orderBy: { fecha: "desc" },
+        include: {
+          items: { include: { product: true } },
+        },
+      });
+
+      if (!orden) {
+        res.status(200).json({ ordenActiva: null });
+        return;
+      }
+
+      res.status(200).json({ ordenActiva: orden });
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Error al obtener orden activa",
+        error: error.message,
+      });
     }
   },
 

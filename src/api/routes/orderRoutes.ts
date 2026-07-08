@@ -40,4 +40,6 @@ router.get("/me", verifyToken, orderController.getMyOrders);
 // --- ESTADÍSTICAS ---
 router.get("/stats", verifyToken, isAdminC, orderController.getGlobalStats);
 
+router.get("/activa", verifyToken, orderController.getOrdenActiva);
+
 export default router;

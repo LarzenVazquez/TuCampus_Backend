@@ -5,6 +5,7 @@
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "rootDir": ".",
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"
@@ -12,6 +13,7 @@
   },
   "include": [
     "src/**/*",
-    "src/types/express.d.ts"
+    "server.ts",
+    "app.js"
   ]
 }
