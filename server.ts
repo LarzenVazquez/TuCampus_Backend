@@ -18,6 +18,23 @@ const io = new Server(server, {
 
 app.set("io", io);
 
+// --- LÓGICA DE SALAS POR USUARIO (necesaria para el tracker en tiempo real) ---
+// El frontend (loader.js) emite "join_user_room" con el id del usuario logueado
+// al conectarse. Antes, el backend nunca escuchaba este evento, por lo que
+// ningún emit dirigido a un usuario específico (io.to(userId).emit(...))
+// llegaba a nadie. Aquí se registra esa sala.
+io.on("connection", (socket: Socket) => {
+  socket.on("join_user_room", (userId: string) => {
+    if (typeof userId === "string" && userId.length > 0) {
+      socket.join(userId);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    // No se requiere limpieza manual: socket.io libera las salas automáticamente.
+  });
+});
+
 // ... (tu función getLocalIp y lógica de sockets igual)
 
 async function initialize(): Promise<void> {

@@ -150,6 +150,7 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         fotoUrl: user.archivos[0]?.url_archivo || null,
         vendedor_verificado: user.vendedor_verificado,
+        es_becado: user.es_becado,
       },
     });
   } catch (error: any) {
@@ -247,6 +248,7 @@ export const verify2FA = async (req: Request, res: Response) => {
         email: user.email,
         fotoUrl: user.archivos[0]?.url_archivo || null,
         vendedor_verificado: user.vendedor_verificado,
+        es_becado: user.es_becado,
       },
     });
   } catch (error: any) {

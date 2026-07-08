@@ -20,6 +20,7 @@ model User {
   rol                 String   @default("Al")
   vendedor_verificado Boolean  @default(false)
   email_verificado    Boolean  @default(false)
+  es_becado           Boolean  @default(false)
   created_at          DateTime @default(now())
 
   // --- CAMPOS DE DOBLE FACTOR DE AUTENTICACIÓN (2FA) ---
@@ -74,6 +75,8 @@ model Product {
   estado          String           @default("DISPONIBLE")
   tipo            String           @default("Cafeteria")
   imagenUrl       String
+  tiempoPrepMin   Int              @default(8)
+  esMenuBeca      Boolean          @default(false)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @updatedAt
   vendedorId      String
@@ -106,8 +109,12 @@ model Order {
   total      Decimal
   metodoPago String      @default("Mercado Pago")
   status     String      @default("CARRITO")
+  tipo       String      @default("Normal") // "Normal" | "Beca"
   qrCodeData String?     @unique
   fecha      DateTime    @default(now())
+  tiempoEstimadoMin Int?
+  fechaListo        DateTime?
+  fechaEntregado    DateTime?
   items      OrderItem[]
 }
 

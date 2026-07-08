@@ -20,6 +20,9 @@ router.patch("/update-status/:id", adminController.updateUserStatus);
 // Verificar vendedor específicamente (Promueve a A_V)
 router.patch("/verify-seller/:id", adminController.verifySeller);
 
+// Asignar / revocar beca alimenticia
+router.patch("/beca/:id", adminController.toggleBeca);
+
 // Eliminar usuario
 router.delete("/user/:id", adminController.deleteUser);
 

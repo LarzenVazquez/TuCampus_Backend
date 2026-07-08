@@ -9,6 +9,9 @@ router.get("/items", productController.getProducts);
 router.get("/search", productController.searchProducts);
 router.get("/items/category/:cat", productController.getProductsByCategory);
 
+// Menú del día habilitado para beca (requiere sesión para saber quién pregunta)
+router.get("/menu-beca", verifyToken, productController.getMenuBeca);
+
 router.get("/items/:id", productController.getProductById);
 
 // --- RUTAS PRIVADAS (Solo Admin-C) ---

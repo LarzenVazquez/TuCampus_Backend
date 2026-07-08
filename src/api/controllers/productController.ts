@@ -18,6 +18,27 @@ export const productController = {
     }
   },
 
+  // Menú del día habilitado para beca alimenticia. Solo devuelve los
+  // productos que la cocina marcó explícitamente con esMenuBeca=true;
+  // así el alumno becado nunca ve (ni puede reclamar) el catálogo completo.
+  getMenuBeca: async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const productos = await prisma.product.findMany({
+        where: {
+          tipo: "Cafeteria",
+          esMenuBeca: true,
+          estado: "DISPONIBLE",
+          stock: { gt: 0 },
+        },
+      });
+      res.status(200).json(productos);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error al cargar el menú de beca", error: error.message });
+    }
+  },
+
   getProductsByCategory: async (req: Request, res: Response): Promise<void> => {
     try {
       const cat = ensureString(req.params.cat);

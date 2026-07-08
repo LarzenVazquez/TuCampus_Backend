@@ -82,6 +82,40 @@ export const adminController = {
     }
   },
 
+  // 3.5 Alternar beca alimenticia de un alumno
+  toggleBeca: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const userId = Array.isArray(id) ? id[0] : id;
+      const { esBecado } = req.body as { esBecado: boolean };
+
+      const usuario = await prisma.$transaction(async (tx) => {
+        const actualizado = await tx.user.update({
+          where: { id: userId },
+          data: { es_becado: !!esBecado },
+        });
+        await tx.activityLog.create({
+          data: {
+            userId: req.user!.id,
+            accion: esBecado ? "BECA_ASIGNADA" : "BECA_REVOCADA",
+            descripcion: `${esBecado ? "Asignó" : "Revocó"} la beca alimenticia al usuario ${userId}`,
+            ip_address: req.ip,
+          },
+        });
+        return actualizado;
+      });
+
+      res.json({
+        message: `Beca ${esBecado ? "asignada" : "revocada"} correctamente`,
+        es_becado: usuario.es_becado,
+      });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error al actualizar la beca", error: error.message });
+    }
+  },
+
   // 4. Logs con relación a User
   getLogs: async (_req: Request, res: Response): Promise<void> => {
     try {

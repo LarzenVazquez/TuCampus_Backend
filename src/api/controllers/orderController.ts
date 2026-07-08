@@ -10,6 +10,28 @@ const getUserId = (req: Request): string => {
   return Array.isArray(id) ? id[0] : id || "";
 };
 
+// --- Cálculo de tiempo estimado de preparación ---
+// Heurística simple: la cocina prepara los distintos platillos en paralelo,
+// así que se toma el tiempo del producto más tardado como base y se suma un
+// pequeño colchón por cada artículo adicional (mismos cocineros, más pasos).
+const calcularTiempoEstimado = (
+  items: { productId: string; cantidad: number }[],
+  productos: { id: string; tiempoPrepMin: number }[],
+): number => {
+  let base = 0;
+  let totalArticulos = 0;
+
+  for (const item of items) {
+    const producto = productos.find((p) => p.id === item.productId);
+    const tiempo = producto?.tiempoPrepMin ?? 8;
+    base = Math.max(base, tiempo);
+    totalArticulos += item.cantidad;
+  }
+
+  const colchon = Math.max(0, totalArticulos - 1) * 1.5;
+  return Math.round(base + colchon);
+};
+
 export const orderController = {
   saveCart: async (req: Request, res: Response): Promise<void> => {
     try {
@@ -68,6 +90,12 @@ export const orderController = {
         return;
       }
 
+      const productos = await prisma.product.findMany({
+        where: { id: { in: cart.items.map((i) => i.productId) } },
+        select: { id: true, tiempoPrepMin: true },
+      });
+      const tiempoEstimadoMin = calcularTiempoEstimado(cart.items, productos);
+
       const order = await prisma.$transaction(async (tx) => {
         for (const item of cart.items) {
           await tx.product.update({
@@ -83,6 +111,128 @@ export const orderController = {
             qrCodeData:
               "QR-" + crypto.randomBytes(6).toString("hex").toUpperCase(),
             fecha: new Date(),
+            tiempoEstimadoMin,
+          },
+        });
+      });
+
+      const io = req.app.get("io");
+      // Aviso global al KDS de cocina: llegó una orden nueva.
+      io?.emit("nueva_orden_kds", {
+        id: order.id,
+        usuario: req.user?.nombre,
+        total: order.total,
+      });
+      // Aviso dirigido SOLO al alumno dueño de la orden, para que su
+      // tracker (barra de progreso) arranque en tiempo real sin polling.
+      io?.to(userId).emit("order_status_update", {
+        orderId: order.id,
+        status: order.status,
+        tipo: order.tipo,
+        tiempoEstimadoMin: order.tiempoEstimadoMin,
+        fecha: order.fecha,
+      });
+
+      res.status(201).json({
+        status: "success",
+        qrData: order.qrCodeData,
+        orderId: order.id,
+        tiempoEstimadoMin,
+      });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error en checkout", error: error.message });
+    }
+  },
+
+  // --- Reclamo de beca alimenticia (gratuito, un consumo por día) ---
+  // Importante: esto NO usa el carrito de compras normal. El alumno becado
+  // solo puede reclamar el/los platillo(s) que la cocina marcó como
+  // "menú de beca" (Product.esMenuBeca = true), nunca productos arbitrarios
+  // del catálogo ni del marketplace.
+  becaCheckout: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = getUserId(req);
+      const { productId } = req.body as { productId?: string };
+
+      if (!productId) {
+        res.status(400).json({ message: "Selecciona un platillo del menú del día." });
+        return;
+      }
+
+      const usuario = await prisma.user.findUnique({ where: { id: userId } });
+      if (!usuario || !usuario.es_becado) {
+        res.status(403).json({
+          message: "Tu cuenta no cuenta con una beca alimenticia activa.",
+        });
+        return;
+      }
+
+      // Regla de negocio: un solo consumo de beca por día (CURRENT_DATE)
+      const inicioDeHoy = new Date();
+      inicioDeHoy.setHours(0, 0, 0, 0);
+      const yaReclamoHoy = await prisma.order.findFirst({
+        where: {
+          userId,
+          tipo: "Beca",
+          status: { not: "CARRITO" },
+          fecha: { gte: inicioDeHoy },
+        },
+      });
+      if (yaReclamoHoy) {
+        res.status(409).json({
+          message: "Ya reclamaste tu beca alimenticia de hoy. Vuelve mañana.",
+        });
+        return;
+      }
+
+      const producto = await prisma.product.findUnique({
+        where: { id: productId },
+      });
+
+      // El producto debe existir y estar explícitamente habilitado como
+      // menú de beca por la cocina; así se bloquea cualquier intento de
+      // reclamar algo fuera del menú del día autorizado.
+      if (!producto || !producto.esMenuBeca || producto.tipo !== "Cafeteria") {
+        res.status(403).json({
+          message: "Ese producto no forma parte del menú de beca de hoy.",
+        });
+        return;
+      }
+
+      const tiempoEstimadoMin = producto.tiempoPrepMin;
+
+      const order = await prisma.$transaction(async (tx) => {
+        // Descuento de stock atómico y seguro ante concurrencia (no hay
+        // reserva previa porque este flujo nunca pasa por Mercado Pago).
+        const actualizado = await tx.product.updateMany({
+          where: { id: producto.id, stock: { gte: 1 } },
+          data: { stock: { decrement: 1 } },
+        });
+        if (actualizado.count === 0) {
+          throw new Error("El menú de beca de hoy ya se agotó.");
+        }
+
+        return tx.order.create({
+          data: {
+            userId,
+            status: "PAGADO",
+            tipo: "Beca",
+            metodoPago: "Beca alimenticia",
+            total: 0,
+            qrCodeData:
+              "QR-" + crypto.randomBytes(6).toString("hex").toUpperCase(),
+            fecha: new Date(),
+            tiempoEstimadoMin,
+            items: {
+              create: {
+                productId: producto.id,
+                nombre: producto.nombre,
+                cantidad: 1,
+                precio: 0,
+              },
+            },
           },
         });
       });
@@ -91,17 +241,27 @@ export const orderController = {
       io?.emit("nueva_orden_kds", {
         id: order.id,
         usuario: req.user?.nombre,
-        total: order.total,
+        total: 0,
+        tipo: "Beca",
       });
+      io?.to(userId).emit("order_status_update", {
+        orderId: order.id,
+        status: order.status,
+        tipo: order.tipo,
+        tiempoEstimadoMin: order.tiempoEstimadoMin,
+        fecha: order.fecha,
+      });
+
       res.status(201).json({
         status: "success",
         qrData: order.qrCodeData,
         orderId: order.id,
+        tiempoEstimadoMin,
       });
     } catch (error: any) {
       res
         .status(500)
-        .json({ message: "Error en checkout", error: error.message });
+        .json({ message: error.message || "Error al reclamar tu beca" });
     }
   },
 
@@ -172,8 +332,23 @@ export const orderController = {
     try {
       const order = await prisma.order.update({
         where: { id: orderId },
-        data: { status: "LISTO" },
+        data: { status: "LISTO", fechaListo: new Date() },
       });
+
+      // Notifica en tiempo real solo al alumno dueño de la orden.
+      const io = req.app.get("io");
+      io?.to(order.userId).emit("orden_lista", {
+        orderId: order.id,
+        mensaje: "¡Tu pedido está listo! Pasa a recogerlo a la cafetería.",
+      });
+      io?.to(order.userId).emit("order_status_update", {
+        orderId: order.id,
+        status: order.status,
+        tipo: order.tipo,
+        tiempoEstimadoMin: order.tiempoEstimadoMin,
+        fecha: order.fecha,
+      });
+
       res.json({ message: "Orden lista", order });
     } catch (error) {
       res.status(500).json({ message: "Error al actualizar" });
@@ -183,10 +358,31 @@ export const orderController = {
   verifyOrder: async (req: Request, res: Response): Promise<void> => {
     try {
       const { qrData } = req.body;
-      const order = await prisma.order.updateMany({
+
+      const pedido = await prisma.order.findFirst({
         where: { qrCodeData: qrData, status: { in: ["PAGADO", "LISTO"] } },
-        data: { status: "ENTREGADO" },
       });
+      if (!pedido) {
+        res
+          .status(404)
+          .json({ message: "QR inválido o la orden ya fue entregada." });
+        return;
+      }
+
+      const order = await prisma.order.update({
+        where: { id: pedido.id },
+        data: { status: "ENTREGADO", fechaEntregado: new Date() },
+      });
+
+      const io = req.app.get("io");
+      io?.to(order.userId).emit("order_status_update", {
+        orderId: order.id,
+        status: order.status,
+        tipo: order.tipo,
+        tiempoEstimadoMin: order.tiempoEstimadoMin,
+        fecha: order.fecha,
+      });
+
       res.json({ message: "Entrega confirmada" });
     } catch (error) {
       res.status(500).json({ message: "Error al verificar" });

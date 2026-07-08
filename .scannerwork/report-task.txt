@@ -1,0 +1,6 @@
+projectKey=TuCampus-Backend
+serverUrl=http://localhost:9000
+serverVersion=26.6.0.123539
+dashboardUrl=http://localhost:9000/dashboard?id=TuCampus-Backend
+ceTaskId=5c49fcd6-386a-4863-8584-86e29118972f
+ceTaskUrl=http://localhost:9000/api/ce/task?id=5c49fcd6-386a-4863-8584-86e29118972f
