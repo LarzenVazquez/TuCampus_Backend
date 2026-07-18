@@ -473,8 +473,15 @@ export const orderController = {
     }
   },
 
+  // Usada por el KDS de cocina (admin/kds.html). Necesita incluir `items`
+  // porque cocinaController.js pinta cada platillo del ticket con
+  // `pedido.items.map(...)` — sin este include, `items` llega undefined.
   getPaidOrders: async (req: Request, res: Response): Promise<void> => {
-    const orders = await prisma.order.findMany({ where: { status: "PAGADO" } });
+    const orders = await prisma.order.findMany({
+      where: { status: "PAGADO" },
+      include: { items: true },
+      orderBy: { fecha: "asc" },
+    });
     res.json(orders);
   },
 
