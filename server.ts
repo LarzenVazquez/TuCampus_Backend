@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import app from "./app";
 // Solo importamos la lógica necesaria, sin conexiones antiguas
 import { train } from "./src/api/controllers/iaController";
+import { evaluarSaturacionKDS } from "./src/services/kdsSaturationService";
 
 dotenv.config();
 
@@ -68,6 +69,22 @@ async function initialize(): Promise<void> {
       {} as any,
       { status: () => ({ json: () => {} }), json: () => {} } as any,
     );
+
+    // --- KDS: Alerta de Saturación (modelo dO/dt = lambda - mu) ---
+    // Recalcula el balance de flujo cada minuto usando datos transaccionales
+    // reales de la tabla Order. Ante cambios puntuales (checkout, orden
+    // lista, entrega) el orderController vuelve a invocar esta misma
+    // función para reaccionar de forma casi inmediata, sin esperar al cron.
+    cron.schedule("* * * * *", async () => {
+      try {
+        await evaluarSaturacionKDS(io);
+      } catch (err: any) {
+        console.error("KDS Saturación Cron Error:", err.message);
+      }
+    });
+
+    console.log("KDS: Monitor de saturación activo (ventana deslizante 1 min)");
+    await evaluarSaturacionKDS(io);
   } catch (error: any) {
     console.error("Fatal Error al iniciar:", error.message);
     process.exit(1);
