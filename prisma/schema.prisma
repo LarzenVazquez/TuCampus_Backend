@@ -21,6 +21,7 @@ model User {
   vendedor_verificado Boolean  @default(false)
   email_verificado    Boolean  @default(false)
   es_becado           Boolean  @default(false)
+  activo              Boolean  @default(true)
   created_at          DateTime @default(now())
 
   // --- CAMPOS DE DOBLE FACTOR DE AUTENTICACIÓN (2FA) ---

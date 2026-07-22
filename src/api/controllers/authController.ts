@@ -121,6 +121,15 @@ export const login = async (req: Request, res: Response) => {
     if (!user || !(await bcrypt.compare(passwordPlana, user.password))) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
+
+    // Cuenta desactivada por un administrador: se bloquea el acceso antes
+    // de cualquier otra validación (2FA, verificación de correo, etc.)
+    if (user.activo === false) {
+      return res.status(403).json({
+        message: "Tu cuenta ha sido desactivada. Contacta a administración.",
+      });
+    }
+
     if (!user.email_verificado)
       return res.status(403).json({ message: "Verifica tu correo" });
 
@@ -212,6 +221,12 @@ export const verify2FA = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ message: "El servicio de 2FA no está activo o configurado." });
+    }
+
+    if (user.activo === false) {
+      return res.status(403).json({
+        message: "Tu cuenta ha sido desactivada. Contacta a administración.",
+      });
     }
 
     // Validación matemática simétrica contra la marca de tiempo (ventana +/- 30 segundos)
