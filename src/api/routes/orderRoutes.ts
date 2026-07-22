@@ -40,6 +40,14 @@ router.get("/me", verifyToken, orderController.getMyOrders);
 // --- ESTADÍSTICAS ---
 router.get("/stats", verifyToken, isAdminC, orderController.getGlobalStats);
 
+// --- MODELO DE SATURACIÓN DEL KDS (dO/dt = lambda - mu) ---
+router.get(
+  "/kds/metrics",
+  verifyToken,
+  isAdminC,
+  orderController.getKdsMetrics,
+);
+
 router.get("/activa", verifyToken, orderController.getOrdenActiva);
 
 export default router;

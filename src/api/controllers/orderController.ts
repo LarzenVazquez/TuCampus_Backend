@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
 import crypto from "crypto";
 import { MercadoPagoConfig, Preference } from "mercadopago";
+import {
+  evaluarSaturacionKDS,
+  getUltimaMetricaKDS,
+} from "../../services/kdsSaturationService";
 
 interface AuthenticatedRequest extends Request {
   user?: { id: string; rol: string; email: string; nombre: string };
@@ -181,6 +185,12 @@ export const orderController = {
         fecha: order.fecha,
       });
 
+      // Nueva orden PAGADO => entra al KDS: recalcula lambda(t) de inmediato
+      // en lugar de esperar al siguiente tick del cron (dO/dt en tiempo real).
+      evaluarSaturacionKDS(io).catch((err) =>
+        console.error("KDS Saturación (checkout):", err.message),
+      );
+
       res.status(201).json({
         status: "success",
         qrData: order.qrCodeData,
@@ -302,6 +312,12 @@ export const orderController = {
         fecha: order.fecha,
       });
 
+      // Reclamo de beca también entra a la cola del KDS: mismo tratamiento
+      // que el checkout normal para el cómputo de lambda(t).
+      evaluarSaturacionKDS(io).catch((err) =>
+        console.error("KDS Saturación (becaCheckout):", err.message),
+      );
+
       res.status(201).json({
         status: "success",
         qrData: order.qrCodeData,
@@ -399,6 +415,12 @@ export const orderController = {
         fecha: order.fecha,
       });
 
+      // El A_C acaba de despachar una comanda (afecta mu): recalcula el
+      // balance de flujo para levantar el aviso restrictivo si ya se alivió.
+      evaluarSaturacionKDS(io).catch((err) =>
+        console.error("KDS Saturación (markAsReady):", err.message),
+      );
+
       res.json({ message: "Orden lista", order });
     } catch (error) {
       res.status(500).json({ message: "Error al actualizar" });
@@ -432,6 +454,10 @@ export const orderController = {
         tiempoEstimadoMin: order.tiempoEstimadoMin,
         fecha: order.fecha,
       });
+
+      evaluarSaturacionKDS(io).catch((err) =>
+        console.error("KDS Saturación (verifyOrder):", err.message),
+      );
 
       res.json({ message: "Entrega confirmada" });
     } catch (error) {
@@ -483,6 +509,23 @@ export const orderController = {
       where: { userId: getUserId(req), status: { not: "CARRITO" } },
     });
     res.json(orders);
+  },
+
+  // --- Modelo matemático de saturación del KDS (dO/dt = lambda - mu) ---
+  // Expone la métrica más reciente para alimentar un widget en el
+  // dashboard del Administrador de Cocina. Si aún no hay ninguna corrida
+  // en memoria (arranque en frío), fuerza un cálculo inmediato.
+  getKdsMetrics: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const io = req.app.get("io");
+      const metrica = getUltimaMetricaKDS() ?? (await evaluarSaturacionKDS(io));
+      res.json(metrica);
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Error al calcular métricas del KDS",
+        error: error.message,
+      });
+    }
   },
 
   getGlobalStats: async (_req: Request, res: Response): Promise<void> => {

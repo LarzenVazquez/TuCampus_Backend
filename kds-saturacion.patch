@@ -1,0 +1,296 @@
+diff --git a/server.ts b/server.ts
+index 8ab4322..27c8bed 100644
+--- a/server.ts
++++ b/server.ts
+@@ -6,6 +6,7 @@ import dotenv from "dotenv";
+ import app from "./app";
+ // Solo importamos la lógica necesaria, sin conexiones antiguas
+ import { train } from "./src/api/controllers/iaController";
++import { evaluarSaturacionKDS } from "./src/services/kdsSaturationService";
+ 
+ dotenv.config();
+ 
+@@ -68,6 +69,22 @@ async function initialize(): Promise<void> {
+       {} as any,
+       { status: () => ({ json: () => {} }), json: () => {} } as any,
+     );
++
++    // --- KDS: Alerta de Saturación (modelo dO/dt = lambda - mu) ---
++    // Recalcula el balance de flujo cada minuto usando datos transaccionales
++    // reales de la tabla Order. Ante cambios puntuales (checkout, orden
++    // lista, entrega) el orderController vuelve a invocar esta misma
++    // función para reaccionar de forma casi inmediata, sin esperar al cron.
++    cron.schedule("* * * * *", async () => {
++      try {
++        await evaluarSaturacionKDS(io);
++      } catch (err: any) {
++        console.error("KDS Saturación Cron Error:", err.message);
++      }
++    });
++
++    console.log("KDS: Monitor de saturación activo (ventana deslizante 1 min)");
++    await evaluarSaturacionKDS(io);
+   } catch (error: any) {
+     console.error("Fatal Error al iniciar:", error.message);
+     process.exit(1);
+diff --git a/src/api/controllers/orderController.ts b/src/api/controllers/orderController.ts
+index ceb8eee..0dacada 100644
+--- a/src/api/controllers/orderController.ts
++++ b/src/api/controllers/orderController.ts
+@@ -2,6 +2,10 @@ import { Request, Response } from "express";
+ import prisma from "../../lib/prismaClient";
+ import crypto from "crypto";
+ import { MercadoPagoConfig, Preference } from "mercadopago";
++import {
++  evaluarSaturacionKDS,
++  getUltimaMetricaKDS,
++} from "../../services/kdsSaturationService";
+ 
+ interface AuthenticatedRequest extends Request {
+   user?: { id: string; rol: string; email: string; nombre: string };
+@@ -181,6 +185,12 @@ export const orderController = {
+         fecha: order.fecha,
+       });
+ 
++      // Nueva orden PAGADO => entra al KDS: recalcula lambda(t) de inmediato
++      // en lugar de esperar al siguiente tick del cron (dO/dt en tiempo real).
++      evaluarSaturacionKDS(io).catch((err) =>
++        console.error("KDS Saturación (checkout):", err.message),
++      );
++
+       res.status(201).json({
+         status: "success",
+         qrData: order.qrCodeData,
+@@ -302,6 +312,12 @@ export const orderController = {
+         fecha: order.fecha,
+       });
+ 
++      // Reclamo de beca también entra a la cola del KDS: mismo tratamiento
++      // que el checkout normal para el cómputo de lambda(t).
++      evaluarSaturacionKDS(io).catch((err) =>
++        console.error("KDS Saturación (becaCheckout):", err.message),
++      );
++
+       res.status(201).json({
+         status: "success",
+         qrData: order.qrCodeData,
+@@ -399,6 +415,12 @@ export const orderController = {
+         fecha: order.fecha,
+       });
+ 
++      // El A_C acaba de despachar una comanda (afecta mu): recalcula el
++      // balance de flujo para levantar el aviso restrictivo si ya se alivió.
++      evaluarSaturacionKDS(io).catch((err) =>
++        console.error("KDS Saturación (markAsReady):", err.message),
++      );
++
+       res.json({ message: "Orden lista", order });
+     } catch (error) {
+       res.status(500).json({ message: "Error al actualizar" });
+@@ -433,6 +455,10 @@ export const orderController = {
+         fecha: order.fecha,
+       });
+ 
++      evaluarSaturacionKDS(io).catch((err) =>
++        console.error("KDS Saturación (verifyOrder):", err.message),
++      );
++
+       res.json({ message: "Entrega confirmada" });
+     } catch (error) {
+       res.status(500).json({ message: "Error al verificar" });
+@@ -485,6 +511,23 @@ export const orderController = {
+     res.json(orders);
+   },
+ 
++  // --- Modelo matemático de saturación del KDS (dO/dt = lambda - mu) ---
++  // Expone la métrica más reciente para alimentar un widget en el
++  // dashboard del Administrador de Cocina. Si aún no hay ninguna corrida
++  // en memoria (arranque en frío), fuerza un cálculo inmediato.
++  getKdsMetrics: async (req: Request, res: Response): Promise<void> => {
++    try {
++      const io = req.app.get("io");
++      const metrica = getUltimaMetricaKDS() ?? (await evaluarSaturacionKDS(io));
++      res.json(metrica);
++    } catch (error: any) {
++      res.status(500).json({
++        message: "Error al calcular métricas del KDS",
++        error: error.message,
++      });
++    }
++  },
++
+   getGlobalStats: async (_req: Request, res: Response): Promise<void> => {
+     const hoy = new Date();
+     hoy.setHours(0, 0, 0, 0);
+diff --git a/src/api/routes/orderRoutes.ts b/src/api/routes/orderRoutes.ts
+index 66decea..523b295 100644
+--- a/src/api/routes/orderRoutes.ts
++++ b/src/api/routes/orderRoutes.ts
+@@ -40,6 +40,14 @@ router.get("/me", verifyToken, orderController.getMyOrders);
+ // --- ESTADÍSTICAS ---
+ router.get("/stats", verifyToken, isAdminC, orderController.getGlobalStats);
+ 
++// --- MODELO DE SATURACIÓN DEL KDS (dO/dt = lambda - mu) ---
++router.get(
++  "/kds/metrics",
++  verifyToken,
++  isAdminC,
++  orderController.getKdsMetrics,
++);
++
+ router.get("/activa", verifyToken, orderController.getOrdenActiva);
+ 
+ export default router;
+diff --git a/src/lib/kdsFlowModel.ts b/src/lib/kdsFlowModel.ts
+new file mode 100644
+index 0000000..0cbd014
+--- /dev/null
++++ b/src/lib/kdsFlowModel.ts
+@@ -0,0 +1,44 @@
++// --- Modelo matemático: Alerta de Saturación del KDS ---
++// Ecuación de balance de flujo (teoría de colas / flujos):
++//
++//     dO/dt = lambda(t) - mu
++//
++// dO/dt      : ritmo de acumulación de órdenes en el KDS (órdenes/min)
++// lambda(t)  : tasa de órdenes ENTRANTES por minuto (checkout -> PAGADO)
++// mu         : tasa de órdenes DESPACHADAS por minuto (A_C marca LISTO/ENTREGADO)
++//
++// Si dO/dt > 0 y supera un umbral crítico parametrizado, el sistema está
++// acumulando órdenes más rápido de lo que la cocina puede procesarlas:
++// riesgo de colapso operativo.
++
++export interface BalanceFlujoKDS {
++  lambda: number; // ordenes/min entrantes
++  mu: number; // ordenes/min despachadas
++  diferencial: number; // dO/dt = lambda - mu
++  umbralCritico: number;
++  saturado: boolean;
++}
++
++/**
++ * Calcula el balance de flujo dO/dt = lambda - mu y determina si el
++ * diferencial supera el umbral crítico de tolerancia (riesgo de colapso).
++ *
++ * Función pura, sin acceso a BD ni IO: facilita pruebas unitarias del
++ * modelo matemático de forma aislada.
++ */
++export function calcularBalanceFlujo(
++  lambda: number,
++  mu: number,
++  umbralCritico: number,
++): BalanceFlujoKDS {
++  const diferencial = lambda - mu;
++  const saturado = diferencial > 0 && diferencial >= umbralCritico;
++
++  return {
++    lambda,
++    mu,
++    diferencial,
++    umbralCritico,
++    saturado,
++  };
++}
+diff --git a/src/services/kdsSaturationService.ts b/src/services/kdsSaturationService.ts
+new file mode 100644
+index 0000000..82ab6a9
+--- /dev/null
++++ b/src/services/kdsSaturationService.ts
+@@ -0,0 +1,97 @@
++import { Server } from "socket.io";
++import prisma from "../lib/prismaClient";
++import { calcularBalanceFlujo, BalanceFlujoKDS } from "../lib/kdsFlowModel";
++
++// --- Parametrización (ajustable vía variables de entorno sin tocar código) ---
++// KDS_VENTANA_MIN: tamaño de la ventana deslizante (minutos) usada para
++//                  estimar lambda y mu de forma dinámica en tiempo real.
++// KDS_UMBRAL_CRITICO: diferencial (ordenes/min) a partir del cual se
++//                      considera riesgo de saturación crítica.
++const VENTANA_MIN = Number(process.env.KDS_VENTANA_MIN) || 10;
++const UMBRAL_CRITICO = Number(process.env.KDS_UMBRAL_CRITICO) || 0.5;
++
++export const MENSAJE_SATURACION =
++  "Cafetería con alta demanda, los pedidos pueden demorar más de lo habitual";
++
++// Estado en memoria del proceso: evita re-emitir el mismo aviso en cada
++// tick del cron; solo se notifica al frontend cuando el estado CAMBIA
++// (entra o sale de saturación), regulando el flujo de forma orgánica sin
++// saturar tampoco los sockets de los alumnos conectados.
++let ultimoEstadoSaturado = false;
++let ultimaMetrica: BalanceFlujoKDS | null = null;
++
++/**
++ * lambda(t): tasa de pedidos entrantes por minuto.
++ *
++ * Nota de mapeo con el esquema real: TuCampus no usa un status literal
++ * "RECIBIDO"; el evento equivalente (la orden entra formalmente a la cola
++ * de cocina) es la transición CARRITO -> PAGADO, que ocurre en
++ * `checkout` / `becaCheckout` y queda registrada en `Order.fecha`.
++ */
++async function calcularLambda(desde: Date): Promise<number> {
++  const entradas = await prisma.order.count({
++    where: {
++      status: { not: "CARRITO" },
++      fecha: { gte: desde },
++    },
++  });
++  return entradas / VENTANA_MIN;
++}
++
++/**
++ * mu: tasa de despacho/capacidad de la cocina por minuto, medida por las
++ * acciones del Administrador de Cocina (A_C): marcar LISTO (`markAsReady`,
++ * timestamp `fechaListo`) o confirmar ENTREGADO vía QR (`verifyOrder`,
++ * timestamp `fechaEntregado`).
++ */
++async function calcularMu(desde: Date): Promise<number> {
++  const [marcadasListo, entregadas] = await Promise.all([
++    prisma.order.count({ where: { fechaListo: { gte: desde } } }),
++    prisma.order.count({ where: { fechaEntregado: { gte: desde } } }),
++  ]);
++  return (marcadasListo + entregadas) / VENTANA_MIN;
++}
++
++/**
++ * Evalúa dO/dt = lambda - mu con datos transaccionales reales y, si
++ * corresponde, inyecta (o retira) el aviso restrictivo en el frontend del
++ * alumno vía Socket.io. Diseñada para ejecutarse tanto en un cron periódico
++ * como inmediatamente después de eventos clave de la orden (checkout,
++ * marcar listo, verificar entrega) para reaccionar casi en tiempo real.
++ */
++export async function evaluarSaturacionKDS(
++  io?: Server,
++): Promise<BalanceFlujoKDS> {
++  const desde = new Date(Date.now() - VENTANA_MIN * 60 * 1000);
++
++  const [lambda, mu] = await Promise.all([
++    calcularLambda(desde),
++    calcularMu(desde),
++  ]);
++
++  const metrica = calcularBalanceFlujo(lambda, mu, UMBRAL_CRITICO);
++  ultimaMetrica = metrica;
++
++  // Solo se emite si el estado de saturación CAMBIÓ respecto al último
++  // cálculo, tal como pide el modelo (aviso preventivo, no ruido constante).
++  if (io && metrica.saturado !== ultimoEstadoSaturado) {
++    io.emit("kds_saturacion_update", {
++      activo: metrica.saturado,
++      mensaje: metrica.saturado ? MENSAJE_SATURACION : null,
++      lambda: Number(metrica.lambda.toFixed(2)),
++      mu: Number(metrica.mu.toFixed(2)),
++      diferencial: Number(metrica.diferencial.toFixed(2)),
++      umbralCritico: UMBRAL_CRITICO,
++      ventanaMin: VENTANA_MIN,
++      timestamp: new Date(),
++    });
++  }
++
++  ultimoEstadoSaturado = metrica.saturado;
++  return metrica;
++}
++
++/** Última métrica calculada, sin volver a consultar la BD (para endpoints de solo lectura tipo dashboard). */
++export function getUltimaMetricaKDS(): BalanceFlujoKDS | null {
++  return ultimaMetrica;
++}
