@@ -43,13 +43,19 @@ async function calcularLambda(desde: Date): Promise<number> {
  * acciones del Administrador de Cocina (A_C): marcar LISTO (`markAsReady`,
  * timestamp `fechaListo`) o confirmar ENTREGADO vía QR (`verifyOrder`,
  * timestamp `fechaEntregado`).
+ *
+ * Nota: se cuenta con OR (órdenes distintas), no se suman dos counts
+ * separados. Si se sumaran, una misma orden que pasa por LISTO y luego
+ * ENTREGADO dentro de la misma ventana se contaría dos veces, inflando
+ * artificialmente mu y pudiendo ocultar una saturación real.
  */
 async function calcularMu(desde: Date): Promise<number> {
-  const [marcadasListo, entregadas] = await Promise.all([
-    prisma.order.count({ where: { fechaListo: { gte: desde } } }),
-    prisma.order.count({ where: { fechaEntregado: { gte: desde } } }),
-  ]);
-  return (marcadasListo + entregadas) / VENTANA_MIN;
+  const salieron = await prisma.order.count({
+    where: {
+      OR: [{ fechaListo: { gte: desde } }, { fechaEntregado: { gte: desde } }],
+    },
+  });
+  return salieron / VENTANA_MIN;
 }
 
 /**
