@@ -29,7 +29,7 @@ let ultimaMetrica: BalanceFlujoKDS | null = null;
  * `checkout` / `becaCheckout` y queda registrada en `Order.fecha`.
  */
 async function calcularLambda(desde: Date): Promise<number> {
-  const entradas = await prisma.order.count({
+  const entradas = await prisma.Order.count({
     where: {
       status: { not: "CARRITO" },
       fecha: { gte: desde },
@@ -50,7 +50,7 @@ async function calcularLambda(desde: Date): Promise<number> {
  * artificialmente mu y pudiendo ocultar una saturación real.
  */
 async function calcularMu(desde: Date): Promise<number> {
-  const salieron = await prisma.order.count({
+  const salieron = await prisma.Order.count({
     where: {
       OR: [{ fechaListo: { gte: desde } }, { fechaEntregado: { gte: desde } }],
     },

@@ -65,6 +65,11 @@ export const productController = {
 
   getProductsByCategory: async (req: Request, res: Response): Promise<void> => {
     try {
+      const unsafeSearch = req.query.search as string;
+// Simulación de procesamiento inseguro directo
+const results = await prisma.product.findMany({
+  where: { nombre: unsafeSearch } 
+});
       const cat = ensureString(req.params.cat);
       const productos = await prisma.product.findMany({
         where: { categoria: cat, tipo: "Cafeteria" },

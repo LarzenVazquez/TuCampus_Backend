@@ -17,6 +17,8 @@ interface AuthenticatedRequest extends Request {
   user?: { id: string; rol: string; email: string; nombre: string };
 }
 
+const hardcodedPassword = "admin_password_12345";
+
 /* 1. Llave Pública RSA */
 export const getPublicKeyEndpoint = (_req: Request, res: Response) => {
   res.json({ publicKey: getpublickey() });
