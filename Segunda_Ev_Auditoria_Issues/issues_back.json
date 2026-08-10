@@ -1,0 +1,3396 @@
+{
+  "total": 59,
+  "p": 1,
+  "ps": 100,
+  "paging": {
+    "pageIndex": 1,
+    "pageSize": 100,
+    "total": 59
+  },
+  "effortTotal": 698,
+  "issues": [
+    {
+      "key": "367ac413-351b-4b6e-a61b-b2e37231b3ee",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/adminController.ts",
+      "project": "tucampus_b",
+      "line": 49,
+      "hash": "1812f05a016d620476eafbd0c9a584f3",
+      "textRange": {
+        "startLine": 49,
+        "endLine": 49,
+        "startOffset": 20,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d85c6111-e36b-4957-ba28-0ee3ca6e2364",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/adminController.ts",
+      "project": "tucampus_b",
+      "line": 84,
+      "hash": "1812f05a016d620476eafbd0c9a584f3",
+      "textRange": {
+        "startLine": 84,
+        "endLine": 84,
+        "startOffset": 20,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "265159b0-00a7-47a3-896b-9eea072294c8",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/adminController.ts",
+      "project": "tucampus_b",
+      "line": 114,
+      "hash": "1812f05a016d620476eafbd0c9a584f3",
+      "textRange": {
+        "startLine": 114,
+        "endLine": 114,
+        "startOffset": 20,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "herrera.roxy23@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-07-08T12:45:07+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "557db21d-af03-4d0c-a165-8080f5e915ae",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/adminController.ts",
+      "project": "tucampus_b",
+      "line": 173,
+      "hash": "1812f05a016d620476eafbd0c9a584f3",
+      "textRange": {
+        "startLine": 173,
+        "endLine": 173,
+        "startOffset": 20,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3e0f5d4e-c908-4a14-8787-1fd640aa678d",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/adminController.ts",
+      "project": "tucampus_b",
+      "line": 243,
+      "hash": "1812f05a016d620476eafbd0c9a584f3",
+      "textRange": {
+        "startLine": 243,
+        "endLine": 243,
+        "startOffset": 20,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "herrera.roxy23@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-07-22T22:41:05+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "789c6f1d-343a-440f-a98e-fd9238489cb1",
+      "rule": "typescript:S7772",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 5,
+      "hash": "2285d605dd32b3513b6cd33d8de49cd0",
+      "textRange": {
+        "startLine": 5,
+        "endLine": 5,
+        "startOffset": 19,
+        "endOffset": 27
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `node:crypto` over `crypto`.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "import", "nodejs"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4176f1aa-95e1-4683-99a2-cc83692b1d37",
+      "rule": "typescript:S7772",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 6,
+      "hash": "e6257dc4b1f21417043851734f5ab373",
+      "textRange": {
+        "startLine": 6,
+        "endLine": 6,
+        "startOffset": 15,
+        "endOffset": 19
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `node:fs` over `fs`.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "import", "nodejs"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "62da20c7-231c-4b47-9de9-97d16b9c8ccb",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 38,
+      "hash": "62d6269a730b2be81f485d273ed06ab4",
+      "textRange": {
+        "startLine": 38,
+        "endLine": 38,
+        "startOffset": 44,
+        "endOffset": 76
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2f44690e-0805-4155-8cd2-e548669a535c",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 66,
+      "hash": "76065eaa2a3e0036779d1a12271b9eef",
+      "textRange": {
+        "startLine": 66,
+        "endLine": 66,
+        "startOffset": 38,
+        "endOffset": 70
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "adb8f7b3-b6e3-4315-adb5-7cc3c604d7e1",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 148,
+      "hash": "81ae50c8563739bdbbf587cd00c4659b",
+      "textRange": {
+        "startLine": 148,
+        "endLine": 148,
+        "startOffset": 6,
+        "endOffset": 38
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "081ff94a-a614-4cdf-8d95-5f84b9d6402d",
+      "rule": "typescript:S6582",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 220,
+      "hash": "9726ff80ff4e92de9bde876e8549920f",
+      "textRange": {
+        "startLine": 220,
+        "endLine": 220,
+        "startOffset": 8,
+        "endOffset": 40
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer using an optional chain expression instead, as it\u0027s more concise and easier to read.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-16T21:48:43+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "fa63690b-0717-4ea1-9cd4-e253026e847e",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 252,
+      "hash": "81ae50c8563739bdbbf587cd00c4659b",
+      "textRange": {
+        "startLine": 252,
+        "endLine": 252,
+        "startOffset": 6,
+        "endOffset": 38
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-16T21:48:43+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4352c676-ccae-40de-8519-4cdf626ca017",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 387,
+      "hash": "81ae50c8563739bdbbf587cd00c4659b",
+      "textRange": {
+        "startLine": 387,
+        "endLine": 387,
+        "startOffset": 8,
+        "endOffset": 40
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c328394e-509f-4339-a03c-98474870eb0e",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/authController.ts",
+      "project": "tucampus_b",
+      "line": 406,
+      "hash": "76065eaa2a3e0036779d1a12271b9eef",
+      "textRange": {
+        "startLine": 406,
+        "endLine": 406,
+        "startOffset": 38,
+        "endOffset": 70
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5859dd7f-558d-4eb2-8fea-19d4750d6e93",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/chatController.ts",
+      "project": "tucampus_b",
+      "line": 8,
+      "hash": "9817933765577bbda21a0809f6b7e0f7",
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 27,
+        "endOffset": 36
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2baca816-9b21-4b78-9ba4-c88561212e7e",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/chatController.ts",
+      "project": "tucampus_b",
+      "line": 52,
+      "hash": "44843e2a1e0aef23dcbdcd07b7006329",
+      "textRange": {
+        "startLine": 52,
+        "endLine": 52,
+        "startOffset": 24,
+        "endOffset": 33
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "082691cd-a261-4ab1-ada5-30497c2036aa",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/chatController.ts",
+      "project": "tucampus_b",
+      "line": 74,
+      "hash": "bbaed83304f2be4a70964e03c26dd4ec",
+      "textRange": {
+        "startLine": 74,
+        "endLine": 74,
+        "startOffset": 21,
+        "endOffset": 30
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4d376c5c-d5dd-43bf-8709-26502a973ddc",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/chatController.ts",
+      "project": "tucampus_b",
+      "line": 95,
+      "hash": "bbaed83304f2be4a70964e03c26dd4ec",
+      "textRange": {
+        "startLine": 95,
+        "endLine": 95,
+        "startOffset": 21,
+        "endOffset": 30
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5eb9a774-8e96-4807-817b-fa3d04af1e29",
+      "rule": "typescript:S7772",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/fileController.ts",
+      "project": "tucampus_b",
+      "line": 2,
+      "hash": "2285d605dd32b3513b6cd33d8de49cd0",
+      "textRange": {
+        "startLine": 2,
+        "endLine": 2,
+        "startOffset": 19,
+        "endOffset": 27
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `node:crypto` over `crypto`.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "import", "nodejs"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "42f3ab97-ee37-4871-858e-83cec1d37a10",
+      "rule": "typescript:S7772",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/fileController.ts",
+      "project": "tucampus_b",
+      "line": 3,
+      "hash": "e6257dc4b1f21417043851734f5ab373",
+      "textRange": {
+        "startLine": 3,
+        "endLine": 3,
+        "startOffset": 15,
+        "endOffset": 19
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `node:fs` over `fs`.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "import", "nodejs"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ff75ac6d-51fc-4c8a-b6b3-3984504e9f4b",
+      "rule": "typescript:S6594",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/iaController.ts",
+      "project": "tucampus_b",
+      "line": 85,
+      "hash": "59ab975e6f7c01a76475719a103142a4",
+      "textRange": {
+        "startLine": 85,
+        "endLine": 85,
+        "startOffset": 32,
+        "endOffset": 37
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Use the \"RegExp.exec()\" method instead.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["regex", "type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "65c12150-7b93-4460-922b-10cc0538c7c2",
+      "rule": "typescript:S6594",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/iaController.ts",
+      "project": "tucampus_b",
+      "line": 86,
+      "hash": "851e8f5e2eb93fa4f5f1e1fce54280de",
+      "textRange": {
+        "startLine": 86,
+        "endLine": 86,
+        "startOffset": 24,
+        "endOffset": 29
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Use the \"RegExp.exec()\" method instead.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["regex", "type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "EFFICIENT",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9d952b7e-a568-40d9-a10a-fefc4ec60491",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/iaController.ts",
+      "project": "tucampus_b",
+      "line": 86,
+      "hash": "851e8f5e2eb93fa4f5f1e1fce54280de",
+      "textRange": {
+        "startLine": 86,
+        "endLine": 86,
+        "startOffset": 17,
+        "endOffset": 37
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "a0ed4051-7c44-4834-b341-f5b6a3d2892e",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/iaController.ts",
+      "project": "tucampus_b",
+      "line": 86,
+      "hash": "851e8f5e2eb93fa4f5f1e1fce54280de",
+      "textRange": {
+        "startLine": 86,
+        "endLine": 86,
+        "startOffset": 8,
+        "endOffset": 16
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `Number.parseInt` over `parseInt`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "es2015"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4ddeb485-f675-4243-a4c0-9fdb5bb23ed0",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 8,
+      "hash": "bbaed83304f2be4a70964e03c26dd4ec",
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 21,
+        "endOffset": 30
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "468b4b29-a2da-45f2-b0e8-b9f1cecc7583",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 67,
+      "hash": "f1f23a30bc1760fe4f6ff39c01d8097a",
+      "textRange": {
+        "startLine": 67,
+        "endLine": 67,
+        "startOffset": 33,
+        "endOffset": 42
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1bad5847-7846-40ee-a161-3c507e08799d",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 98,
+      "hash": "d9dc0d65a5e0a084688f9c8d080ae049",
+      "textRange": {
+        "startLine": 98,
+        "endLine": 98,
+        "startOffset": 22,
+        "endOffset": 31
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e8f468b9-fb5b-41d1-8873-b1be95f1cd72",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 98,
+      "hash": "d9dc0d65a5e0a084688f9c8d080ae049",
+      "textRange": {
+        "startLine": 98,
+        "endLine": 98,
+        "startOffset": 47,
+        "endOffset": 56
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "aeb2987a-656a-4413-b9ad-c9b7b3e92e07",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 100,
+      "hash": "5adb6d7029a5070aac35f3e86b5be28f",
+      "textRange": {
+        "startLine": 100,
+        "endLine": 100,
+        "startOffset": 57,
+        "endOffset": 66
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "cafd29d4-f2e8-43a0-a54c-a58edda192dd",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 143,
+      "hash": "c5abda81b95a682356886745d44716b2",
+      "textRange": {
+        "startLine": 143,
+        "endLine": 143,
+        "startOffset": 29,
+        "endOffset": 38
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "bb79981e-63a4-4464-9115-fa71ec6697e0",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/marketController.ts",
+      "project": "tucampus_b",
+      "line": 178,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 178,
+        "endLine": 180,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2609cccb-0c31-4233-a12d-7551fd3d6612",
+      "rule": "typescript:S7772",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 3,
+      "hash": "2285d605dd32b3513b6cd33d8de49cd0",
+      "textRange": {
+        "startLine": 3,
+        "endLine": 3,
+        "startOffset": 19,
+        "endOffset": 27
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer `node:crypto` over `crypto`.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["convention", "import", "nodejs"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b6482fb3-fab4-43d6-98d2-7e446cafdf91",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 126,
+      "hash": "161b8313784081f5965c2da97df48970",
+      "textRange": {
+        "startLine": 126,
+        "endLine": 128,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "6393c77b-7517-4a0e-a4c6-8db2699d9838",
+      "rule": "typescript:S6582",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 225,
+      "hash": "80496ec1f923931fa370abe1e9abef2e",
+      "textRange": {
+        "startLine": 225,
+        "endLine": 225,
+        "startOffset": 10,
+        "endOffset": 40
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer using an optional chain expression instead, as it\u0027s more concise and easier to read.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "herrera.roxy23@gmail.com",
+      "tags": ["type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-07-08T12:45:07+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "a9875fec-5a10-478a-a579-816e6e0710d3",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 359,
+      "hash": "35f502ac23ce7908a3ae0c130b23b8a2",
+      "textRange": {
+        "startLine": 359,
+        "endLine": 359,
+        "startOffset": 21,
+        "endOffset": 49
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "8e22398a-e1c2-4653-aa57-91168f768bec",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 425,
+      "hash": "161b8313784081f5965c2da97df48970",
+      "textRange": {
+        "startLine": 425,
+        "endLine": 427,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "93a75e3a-3abc-48dd-a9c2-72b275f109fc",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/orderController.ts",
+      "project": "tucampus_b",
+      "line": 463,
+      "hash": "161b8313784081f5965c2da97df48970",
+      "textRange": {
+        "startLine": 463,
+        "endLine": 465,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "517d42a7-d9e2-4a87-8e0d-2c850eced0e2",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 73,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 73,
+        "endLine": 75,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2d911f2d-96d6-4981-9a1f-69331db79afc",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 81,
+      "hash": "359b5bbc2a1a58efa907d4b2e665e3ab",
+      "textRange": {
+        "startLine": 81,
+        "endLine": 81,
+        "startOffset": 8,
+        "endOffset": 17
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d97e679b-4ef7-48d4-aaaf-5379f4078566",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 89,
+      "hash": "066fc6676ac2a347297b04fae3b14332",
+      "textRange": {
+        "startLine": 89,
+        "endLine": 89,
+        "startOffset": 22,
+        "endOffset": 31
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "cfd04042-e923-46a3-8fb4-c16662afd1b3",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 113,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 113,
+        "endLine": 115,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "03c1cac8-e6bb-49e1-b06d-09c0fa36dde8",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 127,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 127,
+        "endLine": 129,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b6bdf262-4a7b-4713-9325-68794d3fa7ab",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 144,
+      "hash": "4c86ff45df2c6657d69cb8797e1c8fda",
+      "textRange": {
+        "startLine": 144,
+        "endLine": 144,
+        "startOffset": 32,
+        "endOffset": 41
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e8ed1ec1-8f20-4cd0-97a3-090b7a2b9f85",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 145,
+      "hash": "e5e35db1a153a56f7ac5bd4aa3c30cff",
+      "textRange": {
+        "startLine": 145,
+        "endLine": 145,
+        "startOffset": 42,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "92303d6a-f446-4a38-9d1b-db3dbc238269",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 146,
+      "hash": "eea4197e31edc28f43ef1dbd46f9057a",
+      "textRange": {
+        "startLine": 146,
+        "endLine": 146,
+        "startOffset": 44,
+        "endOffset": 53
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b0e139aa-2cd2-492b-af4f-1e6c6dff30d8",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 158,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 158,
+        "endLine": 160,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4c431d4c-8114-4daf-be2c-0e7a459ea842",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 174,
+      "hash": "4c86ff45df2c6657d69cb8797e1c8fda",
+      "textRange": {
+        "startLine": 174,
+        "endLine": 174,
+        "startOffset": 32,
+        "endOffset": 41
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "41a430a7-c5b0-4bd4-8448-f26fb16ede19",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 175,
+      "hash": "e5e35db1a153a56f7ac5bd4aa3c30cff",
+      "textRange": {
+        "startLine": 175,
+        "endLine": 175,
+        "startOffset": 42,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0246d6e3-0330-4225-aa0a-a0f962053603",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 176,
+      "hash": "eea4197e31edc28f43ef1dbd46f9057a",
+      "textRange": {
+        "startLine": 176,
+        "endLine": 176,
+        "startOffset": 44,
+        "endOffset": 53
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2a096412-e4a7-410a-b620-10afcda68d15",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/productController.ts",
+      "project": "tucampus_b",
+      "line": 185,
+      "hash": "b2783ba912d225a95afa03e14d88386c",
+      "textRange": {
+        "startLine": 185,
+        "endLine": 187,
+        "startOffset": 6,
+        "endOffset": 5
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d8972dca-6714-4006-9530-4854c2485882",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/userController.ts",
+      "project": "tucampus_b",
+      "line": 33,
+      "hash": "bbaed83304f2be4a70964e03c26dd4ec",
+      "textRange": {
+        "startLine": 33,
+        "endLine": 33,
+        "startOffset": 19,
+        "endOffset": 28
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b47af6c2-993c-4237-8098-9f9f56868dc2",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/api/controllers/userController.ts",
+      "project": "tucampus_b",
+      "line": 68,
+      "hash": "bbaed83304f2be4a70964e03c26dd4ec",
+      "textRange": {
+        "startLine": 68,
+        "endLine": 68,
+        "startOffset": 19,
+        "endOffset": 28
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0a5707c3-c76b-429f-818d-a37b6b2d2f4d",
+      "rule": "typescript:S1854",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/api/controllers/userController.ts",
+      "project": "tucampus_b",
+      "line": 69,
+      "hash": "86cb45fba1bc507eb6f2969689d6c108",
+      "textRange": {
+        "startLine": 69,
+        "endLine": 69,
+        "startOffset": 20,
+        "endOffset": 28
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this useless assignment to variable \"telefono\".",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "unused"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "08298d20-f59c-4357-ae27-3bf71495b106",
+      "rule": "typescript:S6582",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/lib/emailService.ts",
+      "project": "tucampus_b",
+      "line": 6,
+      "hash": "6202850b706e866fc702f073161d5abc",
+      "textRange": {
+        "startLine": 6,
+        "endLine": 6,
+        "startOffset": 4,
+        "endOffset": 38
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer using an optional chain expression instead, as it\u0027s more concise and easier to read.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4857c80c-1e94-40fd-a9ad-4d96b7513e22",
+      "rule": "typescript:S6582",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/lib/emailService.ts",
+      "project": "tucampus_b",
+      "line": 15,
+      "hash": "c0cf4a78ba430965ea7763fecb331a63",
+      "textRange": {
+        "startLine": 15,
+        "endLine": 15,
+        "startOffset": 6,
+        "endOffset": 42
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer using an optional chain expression instead, as it\u0027s more concise and easier to read.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7a15422c-dd83-45e3-8d5c-daca6d6fb176",
+      "rule": "typescript:S6582",
+      "severity": "MAJOR",
+      "component": "tucampus_b:src/middlewares/authMiddleware.ts",
+      "project": "tucampus_b",
+      "line": 10,
+      "hash": "f2f254e15455dcb5f25c7cf19432b94e",
+      "textRange": {
+        "startLine": 10,
+        "endLine": 10,
+        "startOffset": 16,
+        "endOffset": 54
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Prefer using an optional chain expression instead, as it\u0027s more concise and easier to read.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d798f91f-76de-4afb-9c70-915c2bb783d5",
+      "rule": "typescript:S4325",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/middlewares/authMiddleware.ts",
+      "project": "tucampus_b",
+      "line": 20,
+      "hash": "0db6234f8c14e4bb139596fa412083b0",
+      "textRange": {
+        "startLine": 20,
+        "endLine": 20,
+        "startOffset": 19,
+        "endOffset": 51
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "This assertion is unnecessary since it does not change the type of the expression.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["type-dependent", "redundant"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "221e4ed2-83c9-47b5-96b3-bd60c5af72a0",
+      "rule": "typescript:S2486",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/middlewares/authMiddleware.ts",
+      "project": "tucampus_b",
+      "line": 30,
+      "hash": "161b8313784081f5965c2da97df48970",
+      "textRange": {
+        "startLine": 30,
+        "endLine": 32,
+        "startOffset": 4,
+        "endOffset": 3
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Handle this exception or don\u0027t catch it at all.",
+      "effort": "1h",
+      "debt": "1h",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["cwe", "error-handling", "suspicious"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f9e374a2-c417-4104-99f2-1e514a89b27e",
+      "rule": "typescript:S1128",
+      "severity": "MINOR",
+      "component": "tucampus_b:src/types/index.ts",
+      "project": "tucampus_b",
+      "line": 1,
+      "hash": "f92de24714e4800baa9f0e8f6317e630",
+      "textRange": {
+        "startLine": 1,
+        "endLine": 1,
+        "startOffset": 12,
+        "endOffset": 19
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this unused import of \u0027express\u0027.",
+      "effort": "1min",
+      "debt": "1min",
+      "author": "guillermolarzen@gmail.com",
+      "tags": ["es2015", "type-dependent", "unused"],
+      "transitions": [
+        "accept",
+        "falsepositive",
+        "confirm",
+        "resolve",
+        "wontfix"
+      ],
+      "actions": ["set_type", "set_tags", "comment", "set_severity", "assign"],
+      "comments": [],
+      "creationDate": "2026-06-12T06:52:36+0000",
+      "updateDate": "2026-08-10T09:18:58+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    }
+  ],
+  "components": [
+    {
+      "key": "tucampus_b:src/api/controllers/authController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "authController.ts",
+      "longName": "src/api/controllers/authController.ts",
+      "path": "src/api/controllers/authController.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/productController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "productController.ts",
+      "longName": "src/api/controllers/productController.ts",
+      "path": "src/api/controllers/productController.ts"
+    },
+    {
+      "key": "tucampus_b:src/lib/emailService.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "emailService.ts",
+      "longName": "src/lib/emailService.ts",
+      "path": "src/lib/emailService.ts"
+    },
+    {
+      "key": "tucampus_b:src/types/index.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "index.ts",
+      "longName": "src/types/index.ts",
+      "path": "src/types/index.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/adminController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "adminController.ts",
+      "longName": "src/api/controllers/adminController.ts",
+      "path": "src/api/controllers/adminController.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/fileController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "fileController.ts",
+      "longName": "src/api/controllers/fileController.ts",
+      "path": "src/api/controllers/fileController.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/iaController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "iaController.ts",
+      "longName": "src/api/controllers/iaController.ts",
+      "path": "src/api/controllers/iaController.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/chatController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "chatController.ts",
+      "longName": "src/api/controllers/chatController.ts",
+      "path": "src/api/controllers/chatController.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/marketController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "marketController.ts",
+      "longName": "src/api/controllers/marketController.ts",
+      "path": "src/api/controllers/marketController.ts"
+    },
+    {
+      "key": "tucampus_b",
+      "enabled": true,
+      "qualifier": "TRK",
+      "name": "tucampus_b",
+      "longName": "tucampus_b"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/userController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "userController.ts",
+      "longName": "src/api/controllers/userController.ts",
+      "path": "src/api/controllers/userController.ts"
+    },
+    {
+      "key": "tucampus_b:src/middlewares/authMiddleware.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "authMiddleware.ts",
+      "longName": "src/middlewares/authMiddleware.ts",
+      "path": "src/middlewares/authMiddleware.ts"
+    },
+    {
+      "key": "tucampus_b:src/api/controllers/orderController.ts",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "orderController.ts",
+      "longName": "src/api/controllers/orderController.ts",
+      "path": "src/api/controllers/orderController.ts"
+    }
+  ],
+  "rules": [
+    {
+      "key": "typescript:S2486",
+      "name": "Exceptions should not be ignored",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S1854",
+      "name": "Unused assignments should be removed",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S4325",
+      "name": "Redundant casts and non-null assertions should be avoided",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S6582",
+      "name": "Optional chaining should be preferred",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S7773",
+      "name": "Number static methods and properties should be preferred over global equivalents",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S7772",
+      "name": "Node.js built-in modules should be imported using the \"node:\" protocol",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S6594",
+      "name": "\"RegExp.exec()\" should be preferred over \"String.match()\"",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    },
+    {
+      "key": "typescript:S1128",
+      "name": "Unnecessary imports should be removed",
+      "lang": "ts",
+      "status": "READY",
+      "langName": "TypeScript"
+    }
+  ],
+  "users": [
+    {
+      "login": "admin",
+      "name": "Administrator",
+      "active": true
+    }
+  ],
+  "languages": [
+    {
+      "key": "py",
+      "name": "Python"
+    },
+    {
+      "key": "ipynb",
+      "name": "IPython Notebooks"
+    },
+    {
+      "key": "go",
+      "name": "Go"
+    },
+    {
+      "key": "kotlin",
+      "name": "Kotlin"
+    },
+    {
+      "key": "terraform",
+      "name": "Terraform"
+    },
+    {
+      "key": "cloudformation",
+      "name": "CloudFormation"
+    },
+    {
+      "key": "kubernetes",
+      "name": "Kubernetes"
+    },
+    {
+      "key": "docker",
+      "name": "Docker"
+    },
+    {
+      "key": "azureresourcemanager",
+      "name": "Azure Resource Manager"
+    },
+    {
+      "key": "yaml",
+      "name": "YAML"
+    },
+    {
+      "key": "json",
+      "name": "JSON"
+    },
+    {
+      "key": "js",
+      "name": "JavaScript"
+    },
+    {
+      "key": "ts",
+      "name": "TypeScript"
+    },
+    {
+      "key": "css",
+      "name": "CSS"
+    },
+    {
+      "key": "ruby",
+      "name": "Ruby"
+    },
+    {
+      "key": "scala",
+      "name": "Scala"
+    },
+    {
+      "key": "rust",
+      "name": "Rust"
+    },
+    {
+      "key": "cs",
+      "name": "C#"
+    },
+    {
+      "key": "java",
+      "name": "Java"
+    },
+    {
+      "key": "web",
+      "name": "HTML"
+    },
+    {
+      "key": "jsp",
+      "name": "JSP"
+    },
+    {
+      "key": "xml",
+      "name": "XML"
+    },
+    {
+      "key": "flex",
+      "name": "Flex"
+    },
+    {
+      "key": "php",
+      "name": "PHP"
+    },
+    {
+      "key": "text",
+      "name": "Text"
+    },
+    {
+      "key": "secrets",
+      "name": "Secrets"
+    },
+    {
+      "key": "vbnet",
+      "name": "VB.NET"
+    }
+  ],
+  "facets": [
+    {
+      "property": "severities",
+      "values": [
+        {
+          "val": "MINOR",
+          "count": 53
+        },
+        {
+          "val": "MAJOR",
+          "count": 6
+        },
+        {
+          "val": "INFO",
+          "count": 0
+        },
+        {
+          "val": "CRITICAL",
+          "count": 0
+        },
+        {
+          "val": "BLOCKER",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "types",
+      "values": [
+        {
+          "val": "CODE_SMELL",
+          "count": 59
+        },
+        {
+          "val": "BUG",
+          "count": 0
+        },
+        {
+          "val": "VULNERABILITY",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "codeVariants",
+      "values": []
+    },
+    {
+      "property": "impactSoftwareQualities",
+      "values": [
+        {
+          "val": "MAINTAINABILITY",
+          "count": 59
+        },
+        {
+          "val": "RELIABILITY",
+          "count": 1
+        },
+        {
+          "val": "SECURITY",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "impactSeverities",
+      "values": [
+        {
+          "val": "BLOCKER",
+          "count": 0
+        },
+        {
+          "val": "HIGH",
+          "count": 0
+        },
+        {
+          "val": "INFO",
+          "count": 0
+        },
+        {
+          "val": "LOW",
+          "count": 48
+        },
+        {
+          "val": "MEDIUM",
+          "count": 12
+        }
+      ]
+    }
+  ]
+}
