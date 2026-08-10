@@ -13,10 +13,24 @@ dotenv.config();
 app.set("trust proxy", 1);
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: { origin: '*', methods: ["GET", "POST"] },
-});
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ["http://localhost:5173", "http://localhost:3000"];
 
+const io = new Server(server, {
+  cors: { 
+    origin: (origin, callback) => {
+      // Permitir solicitudes sin origen (como apps móviles o Postman) o si están en la lista blanca
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Bloqueado por política CORS de WebSockets'));
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+});
 
 
 app.set("io", io);
