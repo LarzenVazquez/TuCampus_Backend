@@ -17,6 +17,7 @@ interface AuthenticatedRequest extends Request {
   user?: { id: string; rol: string; email: string; nombre: string };
 }
 
+
 /* 1. Llave Pública RSA */
 export const getPublicKeyEndpoint = (_req: Request, res: Response) => {
   res.json({ publicKey: getpublickey() });
@@ -42,8 +43,39 @@ export const register = async (req: Request, res: Response) => {
 
     await sendEmail(
       email,
-      "TuCampus - Verifica tu correo",
-      `<h2>¡Bienvenido!</h2><a href="${verifyLink}">Verificar cuenta</a>`,
+      "Verifica tu correo - TuCampus",
+      `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f7; padding: 32px 16px;">
+        <div style="max-width: 480px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <div style="background-color: #4f46e5; padding: 28px 32px; text-align: center;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700;">TuCampus</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="margin: 0 0 12px; color: #111827; font-size: 20px;">¡Bienvenido, ${nombre}!</h2>
+            <p style="margin: 0 0 20px; color: #4b5563; font-size: 15px; line-height: 1.5;">
+              Gracias por registrarte con tu correo institucional. Para activar tu cuenta y empezar a usar TuCampus, confirma tu correo dando clic en el siguiente botón:
+            </p>
+            <div style="text-align: center; margin: 28px 0;">
+              <a href="${verifyLink}" style="background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 32px; border-radius: 8px; display: inline-block;">
+                Verificar mi cuenta
+              </a>
+            </div>
+            <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; line-height: 1.5;">
+              Este enlace es válido por <strong>24 horas</strong>. Si no verificas tu cuenta en ese tiempo, tendrás que registrarte de nuevo.
+            </p>
+            <p style="margin: 20px 0 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
+              Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+              <span style="word-break: break-all; color: #6b7280;">${verifyLink}</span>
+            </p>
+          </div>
+          <div style="background-color: #f9fafb; padding: 16px 32px; text-align: center;">
+            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+              Si tú no creaste esta cuenta, puedes ignorar este correo.
+            </p>
+          </div>
+        </div>
+      </div>
+      `,
     );
 
     res.status(201).json({
@@ -423,8 +455,8 @@ export const authController = {
   register,
   verifyEmail,
   login,
-  setup2FA, // Agregado al objeto exportador
-  verify2FA, // Agregado al objeto exportador
+  setup2FA, 
+  verify2FA,
   uploadSecureFile,
   getProfile,
   logout,
