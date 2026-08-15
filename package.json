@@ -28,14 +28,16 @@
     "pg": "^8.21.0",
     "qrcode": "^1.5.4",
     "resend": "^6.10.0",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
   },
   "name": "backend",
   "version": "1.0.0",
   "engines": {
     "node": ">=20.0.0"
   },
-  "description": "Estrutura de las carpetas\r backend/\r ├── src/\r │   ├── api/                    # Punto de entrada de los servicios\r │   │   ├── auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)\r │   │   │   ├── controllers/\r │   │   │   ├── models/         # userModel.js\r │   │   │   └── routes/\r │   │   └── campus-service/     # DOMINIO: Cafetería y Market (NoSQL)\r │   │       ├── controllers/\r │   │       ├── models/         # productModel.js, orderModel.js\r │   │       └── routes/\r │   ├── config/                 # Configuraciones Globales\r │   │   ├── dbSql.js            # Conexión MySQL\r │   │   └── dbNoSql.js          # Conexión MongoDB\r │   ├── middlewares/            # Compartidos (Auth, Validaciones)\r │   │   ├── authMiddleware.js\r │   │   └── roleMiddleware.js\r │   ├── services/               # Lógica de negocio pesada o externa\r │   │   ├── mailService.js      # Para recuperar contraseña (SQL)\r │   │   └── qrService.js        # Para generar QRs (NoSQL)\r │   └── utils/                  # Helpers comunes\r ├── .env                        # Una sola fuente de verdad\r ├── app.js                      # Une las rutas de ambos servicios\r └── server.js                   # Arranca el corazón del proyecto",
+  "description": "Estrutura de las carpetas\r backend/\r \u251c\u2500\u2500 src/\r \u2502   \u251c\u2500\u2500 api/                    # Punto de entrada de los servicios\r \u2502   \u2502   \u251c\u2500\u2500 auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)\r \u2502   \u2502   \u2502   \u251c\u2500\u2500 controllers/\r \u2502   \u2502   \u2502   \u251c\u2500\u2500 models/         # userModel.js\r \u2502   \u2502   \u2502   \u2514\u2500\u2500 routes/\r \u2502   \u2502   \u2514\u2500\u2500 campus-service/     # DOMINIO: Cafeter\u00eda y Market (NoSQL)\r \u2502   \u2502       \u251c\u2500\u2500 controllers/\r \u2502   \u2502       \u251c\u2500\u2500 models/         # productModel.js, orderModel.js\r \u2502   \u2502       \u2514\u2500\u2500 routes/\r \u2502   \u251c\u2500\u2500 config/                 # Configuraciones Globales\r \u2502   \u2502   \u251c\u2500\u2500 dbSql.js            # Conexi\u00f3n MySQL\r \u2502   \u2502   \u2514\u2500\u2500 dbNoSql.js          # Conexi\u00f3n MongoDB\r \u2502   \u251c\u2500\u2500 middlewares/            # Compartidos (Auth, Validaciones)\r \u2502   \u2502   \u251c\u2500\u2500 authMiddleware.js\r \u2502   \u2502   \u2514\u2500\u2500 roleMiddleware.js\r \u2502   \u251c\u2500\u2500 services/               # L\u00f3gica de negocio pesada o externa\r \u2502   \u2502   \u251c\u2500\u2500 mailService.js      # Para recuperar contrase\u00f1a (SQL)\r \u2502   \u2502   \u2514\u2500\u2500 qrService.js        # Para generar QRs (NoSQL)\r \u2502   \u2514\u2500\u2500 utils/                  # Helpers comunes\r \u251c\u2500\u2500 .env                        # Una sola fuente de verdad\r \u251c\u2500\u2500 app.js                      # Une las rutas de ambos servicios\r \u2514\u2500\u2500 server.js                   # Arranca el coraz\u00f3n del proyecto",
   "main": "app.js",
   "scripts": {
     "test": "jest",
@@ -64,9 +66,7 @@
     "jest": "^30.4.2",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
-    "ts-jest": "^29.4.12",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "ts-jest": "^29.4.12"
   },
   "allowScripts": {
     "@prisma/engines@7.8.0": true,
