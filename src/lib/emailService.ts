@@ -1,24 +1,34 @@
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 
-const apiKey = process.env.SENDGRID_API_KEY;
+const gmailUser = process.env.GMAIL_USER;
+const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
 
-// Inicializamos solo si la key existe y es válida
-if (apiKey && apiKey.startsWith("SG.")) {
-  sgMail.setApiKey(apiKey);
-} else {
+const isConfigured = Boolean(gmailUser && gmailAppPassword);
+
+const transporter = isConfigured
+  ? nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+      },
+    })
+  : null;
+
+if (!isConfigured) {
   console.warn(
-    "ADVERTENCIA: SendGrid no configurado. Los correos no se enviarán.",
+    "ADVERTENCIA: Gmail SMTP no configurado (faltan GMAIL_USER / GMAIL_APP_PASSWORD). Los correos no se enviarán.",
   );
 }
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
-  if (!apiKey || !apiKey.startsWith("SG.")) {
+  if (!transporter) {
     console.log(`Simulando envío de correo a ${to}: ${subject}`);
     return;
   }
-  return await sgMail.send({
+  return await transporter.sendMail({
+    from: `"TuCampus" <${gmailUser}>`,
     to,
-    from: "tucampus.uteq@gmail.com",
     subject,
     html,
   });
