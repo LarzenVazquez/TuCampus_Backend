@@ -1,35 +1,35 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-const gmailUser = process.env.GMAIL_USER;
-const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+const brevoApiKey = process.env.BREVO_API_KEY;
+const senderEmail = process.env.BREVO_SENDER_EMAIL || "tucampus.uteq@gmail.com";
 
-const isConfigured = Boolean(gmailUser && gmailAppPassword);
-
-const transporter = isConfigured
-  ? nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: gmailUser,
-        pass: gmailAppPassword,
-      },
-    })
-  : null;
+const isConfigured = Boolean(brevoApiKey);
 
 if (!isConfigured) {
   console.warn(
-    "ADVERTENCIA: Gmail SMTP no configurado (faltan GMAIL_USER / GMAIL_APP_PASSWORD). Los correos no se enviarán.",
+    "ADVERTENCIA: Brevo no configurado (falta BREVO_API_KEY). Los correos no se enviarán.",
   );
 }
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
-  if (!transporter) {
+  if (!isConfigured) {
     console.log(`Simulando envío de correo a ${to}: ${subject}`);
     return;
   }
-  return await transporter.sendMail({
-    from: `"TuCampus" <${gmailUser}>`,
-    to,
-    subject,
-    html,
-  });
+  return await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      sender: { email: senderEmail, name: "TuCampus" },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    },
+    {
+      headers: {
+        "api-key": brevoApiKey,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    },
+  );
 };
