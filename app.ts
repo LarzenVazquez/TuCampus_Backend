@@ -1,4 +1,3 @@
-/// <reference path="./src/types/index.ts" />
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -41,10 +40,14 @@ const authLimiter = rateLimit({
 // Incluye: Content-Security-Policy, X-Frame-Options, Strict-Transport-Security, etc.
 app.use(helmet());
 
-// CORS restrictivo: solo permite peticiones desde los orígenes autorizados
+
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:3000",
   "https://tu-campus-frontend.vercel.app",
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+    : []),
   process.env.FRONTEND_URL || "",
 ].filter(Boolean);
 
@@ -67,7 +70,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(limiter);
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- DEFINICIÓN DE ENDPOINTS ---
 app.use("/api/auth", authLimiter, authRoutes);

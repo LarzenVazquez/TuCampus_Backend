@@ -2,5 +2,5 @@ projectKey=TuCampus
 serverUrl=http://localhost:9000
 serverVersion=26.6.0.123539
 dashboardUrl=http://localhost:9000/dashboard?id=TuCampus
-ceTaskId=fc547f9b-28bd-44f6-b64d-b5be4bc53f2f
-ceTaskUrl=http://localhost:9000/api/ce/task?id=fc547f9b-28bd-44f6-b64d-b5be4bc53f2f
+ceTaskId=2686c275-91c9-4cf3-a2a5-42867e66e8b2
+ceTaskUrl=http://localhost:9000/api/ce/task?id=2686c275-91c9-4cf3-a2a5-42867e66e8b2

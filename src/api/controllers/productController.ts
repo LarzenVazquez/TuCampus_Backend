@@ -62,32 +62,36 @@ export const productController = {
       });
     }
   },
-//hallazgo 2 fixed
-getProductsByCategory: async (req: Request, res: Response): Promise<void> => {
-  try {
-    const cat = ensureString(req.params.cat);
+  //hallazgo 2 fixed
+  getProductsByCategory: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const cat = ensureString(req.params.cat);
 
-    // Validación y sanitización del parámetro opcional de búsqueda si se usa
-    const search = req.query.search;
-    let whereCondition: any = { categoria: cat, tipo: "Cafeteria" };
+      // Validación y sanitización del parámetro opcional de búsqueda si se usa
+      const search = req.query.search;
+      let whereCondition: any = { categoria: cat, tipo: "Cafeteria" };
 
-    if (search) {
-      if (typeof search !== 'string' || search.length > 50) {
-        res.status(400).json({ message: "Parámetro de búsqueda inválido" });
-        return;
+      if (search) {
+        if (typeof search !== "string" || search.length > 50) {
+          res.status(400).json({ message: "Parámetro de búsqueda inválido" });
+          return;
+        }
+        whereCondition.nombre = {
+          contains: search.trim(),
+          mode: "insensitive",
+        };
       }
-      whereCondition.nombre = { contains: search.trim(), mode: 'insensitive' };
+
+      const productos = await prisma.product.findMany({
+        where: whereCondition,
+      });
+
+      res.status(200).json(productos);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error al filtrar productos" });
     }
+  },
 
-    const productos = await prisma.product.findMany({
-      where: whereCondition,
-    });
-
-    res.status(200).json(productos);
-  } catch (error: any) {
-    res.status(500).json({ message: "Error al filtrar productos" });
-  }
-},
 
   createProduct: async (req: Request, res: Response): Promise<void> => {
     try {
