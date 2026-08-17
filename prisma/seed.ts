@@ -1,3 +1,19 @@
+/**
+ * prisma/seed.ts
+ *
+ * Seed para pruebas de endpoints. Crea un usuario por cada rol del
+ * sistema (mas un par de alumnos extra para probar flujos que requieren
+ * dos cuentas distintas, como chat comprador-vendedor o aprobacion de
+ * vendedor por parte del admin) y 12 productos de cafeteria.
+ *
+ * IMPORTANTE: a propósito los usuarios se crean con `email_verificado: true`
+ * y `activo: true` para saltarse el flujo de verificación por correo y
+ * poder hacer login de inmediato. Esto es solo para desarrollo/pruebas:
+ * nunca uses este seed contra una base de datos de producción.
+ *
+ * Uso:
+ *   npx prisma db seed
+ */
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import prisma from "../src/lib/prismaClient";
@@ -5,6 +21,7 @@ import prisma from "../src/lib/prismaClient";
 const IMG_PLACEHOLDER =
   "https://images.pexels.com/photos/14018214/pexels-photo-14018214.png";
 
+// Matrícula = lo que viene antes de la @ en el correo institucional
 const matriculaDe = (email: string) => email.split("@")[0];
 
 async function seedUsers() {
@@ -38,18 +55,19 @@ async function seedUsers() {
     {
       nombre: "Jose Lopez",
       email: "2023371214@uteq.edu.mx",
-      password: "",
-      rol: "",
+      password: "Limon12.",
+      rol: "Al",
     },
     {
       nombre: "Ricardo Porras",
       email: "2024171008@uteq.edu.mx",
-      password: "",
-      rol: "",
+      password: "Salsa12.",
+      rol: "Al",
     },
   ];
 
   const creados: Record<string, string> = {};
+
   for (const u of usuarios) {
     const hashedPassword = await bcrypt.hash(u.password, 10);
 
@@ -87,7 +105,6 @@ async function seedUsers() {
 
 async function seedProducts(vendedorId: string) {
   const productos = [
-    // --- Comida ---
     {
       nombre: "Torta de Jamón",
       categoria: "Comida",
@@ -146,7 +163,6 @@ async function seedProducts(vendedorId: string) {
       tiempoPrepMin: 6,
       esMenuBeca: true,
     },
-    // --- Bebidas ---
     {
       nombre: "Café Americano",
       categoria: "Bebidas",
@@ -209,7 +225,7 @@ async function seedProducts(vendedorId: string) {
           esMenuBeca: p.esMenuBeca ?? false,
         },
       });
-      console.log(` Producto actualizado: ${p.nombre}`);
+      console.log(`Producto actualizado: ${p.nombre}`);
       continue;
     }
 
@@ -234,25 +250,27 @@ async function seedProducts(vendedorId: string) {
 }
 
 async function main() {
-  console.log(" Sembrando usuarios...");
+  console.log("Sembrando usuarios...");
   const idsPorRol = await seedUsers();
 
-  console.log("\n Sembrando productos de cafetería...");
+  console.log("\nSembrando productos de cafetería...");
   await seedProducts(idsPorRol["A_C"]);
 
-  console.log("\n Seed completado.");
+  console.log("\nSeed completado.");
   console.log(`
 Credenciales de prueba (todas ya con email_verificado = true):
-  Admin maestro (A)   -> 2024171035@uteq.edu.mx / Menta12.
-  Cafetería (A_C)     -> 2024171016@uteq.edu.mx / Huesos12.
-  Alumno vendedor (A_V)-> 2023148002@uteq.edu.mx / Nieve12.
-  Alumno normal (Al)  -> 2024171010@uteq.edu.mx / Miau123.
+  Admin maestro (A)        -> 2024171035@uteq.edu.mx / Menta12.
+  Cafetería (A_C)          -> 2024171016@uteq.edu.mx / Huesos12.
+  Alumno vendedor (A_V)    -> 2023148002@uteq.edu.mx / Nieve12.
+  Alumno normal, becado    -> 2024171010@uteq.edu.mx / Miau123.
+  Alumno normal            -> 2023371214@uteq.edu.mx / Limon12.
+  Alumno normal            -> 2024171008@uteq.edu.mx / Salsa12.
 `);
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error al ejecutar el seed:", e);
+    console.error("Error al ejecutar el seed:", e);
     process.exit(1);
   })
   .finally(async () => {
