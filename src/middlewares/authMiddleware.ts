@@ -32,7 +32,6 @@ export const verifyToken = (
   }
 };
 
-// Función privada de utilidad para validar roles
 const checkRole = (
   role: string,
   req: Request,
@@ -56,4 +55,4 @@ export const isAdminC = (req: Request, res: Response, next: NextFunction) =>
 export const isSeller = (req: Request, res: Response, next: NextFunction) =>
   checkRole("A_V", req, res, next);
 export const isAlumno = (req: Request, res: Response, next: NextFunction) =>
-  checkRole("AL", req, res, next);
+  checkRole("Al", req, res, next);

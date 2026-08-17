@@ -44,7 +44,8 @@
     "test:watch": "jest --watch",
     "test:kds": "node -r ts-node/register/transpile-only --test src/lib/__tests__/kdsFlowModel.test.ts",
     "test:coverage": "jest --coverage",
-    "start": "ts-node --transpile-only server.ts"
+    "start": "ts-node --transpile-only server.ts",
+    "seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
