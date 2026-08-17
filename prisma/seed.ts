@@ -1,19 +1,3 @@
-/**
- * prisma/seed.ts
- *
- * Seed para pruebas de endpoints. Crea un usuario por cada rol del
- * sistema (mas un par de alumnos extra para probar flujos que requieren
- * dos cuentas distintas, como chat comprador-vendedor o aprobacion de
- * vendedor por parte del admin) y 12 productos de cafeteria.
- *
- * IMPORTANTE: a propósito los usuarios se crean con `email_verificado: true`
- * y `activo: true` para saltarse el flujo de verificación por correo y
- * poder hacer login de inmediato. Esto es solo para desarrollo/pruebas:
- * nunca uses este seed contra una base de datos de producción.
- *
- * Uso:
- *   npx prisma db seed
- */
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import prisma from "../src/lib/prismaClient";
@@ -21,7 +5,6 @@ import prisma from "../src/lib/prismaClient";
 const IMG_PLACEHOLDER =
   "https://images.pexels.com/photos/14018214/pexels-photo-14018214.png";
 
-// Matrícula = lo que viene antes de la @ en el correo institucional
 const matriculaDe = (email: string) => email.split("@")[0];
 
 async function seedUsers() {
@@ -122,7 +105,7 @@ async function seedProducts(vendedorId: string) {
       tiempoPrepMin: 10,
     },
     {
-      nombre: "Sándwich de Club",
+      nombre: "Sándwich",
       categoria: "Comida",
       precio: 50,
       calorias: 450,
@@ -245,7 +228,7 @@ async function seedProducts(vendedorId: string) {
         vendedorId,
       },
     });
-    console.log(`🍔 Producto creado: ${p.nombre}`);
+    console.log(`Producto creado: ${p.nombre}`);
   }
 }
 
