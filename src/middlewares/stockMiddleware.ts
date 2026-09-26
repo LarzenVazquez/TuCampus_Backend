@@ -13,7 +13,7 @@ export const checkStock = async (
     }: { items: { productId: string; cantidad: number; nombre: string }[] } =
       req.body;
 
-    if (!items || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       res.status(400).json({ message: "La orden no contiene productos" });
       return;
     }
@@ -36,7 +36,18 @@ export const checkStock = async (
         return;
       }
 
-      if (producto.stock < item.cantidad) {
+      const cantidad = Number(item.cantidad);
+      if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 50) {
+        res.status(400).json({ message: `Cantidad inválida para ${producto.nombre}.` });
+        return;
+      }
+
+      if (producto.tipo !== "Cafeteria" || producto.estado === "AGOTADO") {
+        res.status(400).json({ message: `${producto.nombre} no está disponible por ahora.` });
+        return;
+      }
+
+      if (producto.stock < cantidad) {
         res.status(400).json({
           message: `Stock insuficiente para ${producto.nombre}. Disponibles: ${producto.stock}`,
         });

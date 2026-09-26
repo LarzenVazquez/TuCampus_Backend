@@ -37,15 +37,19 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "description": "Estrutura de las carpetas\r backend/\r \u251c\u2500\u2500 src/\r \u2502   \u251c\u2500\u2500 api/                    # Punto de entrada de los servicios\r \u2502   \u2502   \u251c\u2500\u2500 auth-service/       # DOMINIO: Usuarios y Seguridad (SQL)\r \u2502   \u2502   \u2502   \u251c\u2500\u2500 controllers/\r \u2502   \u2502   \u2502   \u251c\u2500\u2500 models/         # userModel.js\r \u2502   \u2502   \u2502   \u2514\u2500\u2500 routes/\r \u2502   \u2502   \u2514\u2500\u2500 campus-service/     # DOMINIO: Cafeter\u00eda y Market (NoSQL)\r \u2502   \u2502       \u251c\u2500\u2500 controllers/\r \u2502   \u2502       \u251c\u2500\u2500 models/         # productModel.js, orderModel.js\r \u2502   \u2502       \u2514\u2500\u2500 routes/\r \u2502   \u251c\u2500\u2500 config/                 # Configuraciones Globales\r \u2502   \u2502   \u251c\u2500\u2500 dbSql.js            # Conexi\u00f3n MySQL\r \u2502   \u2502   \u2514\u2500\u2500 dbNoSql.js          # Conexi\u00f3n MongoDB\r \u2502   \u251c\u2500\u2500 middlewares/            # Compartidos (Auth, Validaciones)\r \u2502   \u2502   \u251c\u2500\u2500 authMiddleware.js\r \u2502   \u2502   \u2514\u2500\u2500 roleMiddleware.js\r \u2502   \u251c\u2500\u2500 services/               # L\u00f3gica de negocio pesada o externa\r \u2502   \u2502   \u251c\u2500\u2500 mailService.js      # Para recuperar contrase\u00f1a (SQL)\r \u2502   \u2502   \u2514\u2500\u2500 qrService.js        # Para generar QRs (NoSQL)\r \u2502   \u2514\u2500\u2500 utils/                  # Helpers comunes\r \u251c\u2500\u2500 .env                        # Una sola fuente de verdad\r \u251c\u2500\u2500 app.js                      # Une las rutas de ambos servicios\r \u2514\u2500\u2500 server.js                   # Arranca el coraz\u00f3n del proyecto",
-  "main": "app.js",
+  "description": "Backend de TuCampus (Express + Prisma + Socket.IO). Compatible con el frontend Vite y el frontend Angular.",
+  "main": "server.ts",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
     "test:kds": "node -r ts-node/register/transpile-only --test src/lib/__tests__/kdsFlowModel.test.ts",
     "test:coverage": "jest --coverage",
     "start": "ts-node --transpile-only server.ts",
-    "seed": "ts-node --transpile-only prisma/seed.ts"
+    "seed": "ts-node --transpile-only prisma/seed.ts",
+    "dev": "ts-node --transpile-only server.ts",
+    "typecheck": "tsc --noEmit --skipLibCheck -p tsconfig.json",
+    "prisma:generate": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",

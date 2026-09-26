@@ -1,109 +1,105 @@
 import http from "http";
 import { Server, Socket } from "socket.io";
-import os from "os";
 import cron from "node-cron";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import app from "./app";
-// Solo importamos la lógica necesaria, sin conexiones antiguas
 import { train } from "./src/api/controllers/iaController";
 import { evaluarSaturacionKDS } from "./src/services/kdsSaturationService";
+import { corsOriginCallback } from "./src/lib/appConfig";
 
 dotenv.config();
 
-app.set("trust proxy", 1);
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
-  : ["http://localhost:5173", "http://localhost:3000"];
-
 const io = new Server(server, {
-  cors: { 
-    origin: (origin, callback) => {
-      // Permitir solicitudes sin origen (como apps móviles o Postman) o si están en la lista blanca
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Bloqueado por política CORS de WebSockets'));
-      }
-    },
+  cors: {
+    origin: corsOriginCallback,
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
 });
 
-
 app.set("io", io);
 
-// --- LÓGICA DE SALAS POR USUARIO (necesaria para el tracker en tiempo real) ---
-// El frontend (loader.js) emite "join_user_room" con el id del usuario logueado
-// al conectarse. Antes, el backend nunca escuchaba este evento, por lo que
-// ningún emit dirigido a un usuario específico (io.to(userId).emit(...))
-// llegaba a nadie. Aquí se registra esa sala.
-io.on("connection", (socket: Socket) => {
-  socket.on("join_user_room", (userId: string) => {
-    if (typeof userId === "string" && userId.length > 0) {
-      socket.join(userId);
-    }
-  });
+const usuarioDelHandshake = (
+  socket: Socket,
+): { id: string; rol: string } | null => {
+  const raw =
+    (socket.handshake.auth as any)?.token ||
+    (socket.handshake.headers.authorization || "").toString().split(" ")[1];
+  if (!raw || !process.env.JWT_SECRET) return null;
+  try {
+    const decoded = jwt.verify(raw, process.env.JWT_SECRET) as {
+      id: string;
+      rol: string;
+    };
+    return decoded?.id ? decoded : null;
+  } catch {
+    return null;
+  }
+};
 
-  socket.on("disconnect", () => {
-    // No se requiere limpieza manual: socket.io libera las salas automáticamente.
+io.on("connection", (socket: Socket) => {
+  const autenticado = usuarioDelHandshake(socket);
+  if (autenticado) {
+    socket.join(autenticado.id);
+    if (autenticado.rol === "A_C" || autenticado.rol === "A")
+      socket.join("staff");
+  }
+
+  socket.on("join_user_room", (userId: string) => {
+    if (typeof userId !== "string" || userId.length === 0 || userId.length > 64)
+      return;
+    if (autenticado && autenticado.id !== userId) return;
+    socket.join(userId);
   });
 });
 
-// ... (tu función getLocalIp y lógica de sockets igual)
+const tareaEntrenarIA = async () => {
+  await train(
+    {} as any,
+    { status: () => ({ json: () => {} }), json: () => {} } as any,
+  );
+};
 
 async function initialize(): Promise<void> {
+  const PORT = process.env.PORT || 3000;
+
+  server.listen(Number(PORT), "0.0.0.0", () => {
+    console.log(`Server corriendo en puerto ${PORT}`);
+    console.log("WebSockets: Activo");
+  });
+
+  cron.schedule("0 * * * *", async () => {
+    console.log("IA: Iniciando entrenamiento programado");
+    try {
+      await tareaEntrenarIA();
+    } catch (err: any) {
+      console.error("IA Cron Error:", err.message);
+    }
+  });
+
+  cron.schedule("* * * * *", async () => {
+    try {
+      await evaluarSaturacionKDS(io);
+    } catch (err: any) {
+      console.error("KDS Saturación Cron Error:", err.message);
+    }
+  });
+
   try {
-    // Ya no inicializamos dbSql ni dbNoSql.
-    // Prisma gestiona la conexión de forma automática al hacer la primera query.
-    console.log("Servidor: Conectando a servicios...");
-
-    const PORT = process.env.PORT || 3000;
-
-    server.listen(Number(PORT), "0.0.0.0", () => {
-      console.log(`Server corriendo en puerto ${PORT}`);
-      console.log("WebSockets: Activo");
-    });
-
-    // IA: Ejecución programada usando el contexto del ORM
-    cron.schedule("0 * * * *", async () => {
-      console.log("IA: Iniciando entrenamiento programado");
-      try {
-        await train(
-          {} as any,
-          { status: () => ({ json: () => {} }), json: () => {} } as any,
-        );
-      } catch (err: any) {
-        console.error("IA Cron Error:", err.message);
-      }
-    });
-
     console.log("IA: Ejecutando entrenamiento inicial...");
-    await train(
-      {} as any,
-      { status: () => ({ json: () => {} }), json: () => {} } as any,
-    );
+    await tareaEntrenarIA();
+  } catch (err: any) {
+    console.error("IA: entrenamiento inicial falló:", err.message);
+  }
 
-    // --- KDS: Alerta de Saturación (modelo dO/dt = lambda - mu) ---
-    // Recalcula el balance de flujo cada minuto usando datos transaccionales
-    // reales de la tabla Order. Ante cambios puntuales (checkout, orden
-    // lista, entrega) el orderController vuelve a invocar esta misma
-    // función para reaccionar de forma casi inmediata, sin esperar al cron.
-    cron.schedule("* * * * *", async () => {
-      try {
-        await evaluarSaturacionKDS(io);
-      } catch (err: any) {
-        console.error("KDS Saturación Cron Error:", err.message);
-      }
-    });
-
-    console.log("KDS: Monitor de saturación activo (ventana deslizante 1 min)");
+  try {
     await evaluarSaturacionKDS(io);
-  } catch (error: any) {
-    console.error("Fatal Error al iniciar:", error.message);
-    process.exit(1);
+    console.log("KDS: Monitor de saturación activo");
+  } catch (err: any) {
+    console.error("KDS: cálculo inicial falló:", err.message);
   }
 }
 

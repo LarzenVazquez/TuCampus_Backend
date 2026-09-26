@@ -1,6 +1,10 @@
 import { Router } from "express";
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
 import { authController } from "../controllers/authController";
 import { verifyToken } from "../../middlewares/authMiddleware";
+import { authLimiter } from "../../middlewares/rateLimiters";
 import {
   validateRegister,
   validateLogin,
@@ -11,12 +15,22 @@ import {
 import multer from "multer";
 
 const router = Router();
+const UPLOAD_DIR = path.join(process.cwd(), "uploads", "profiles");
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-// --- CONFIGURACIÓN DE MULTER CON VALIDACIÓN DE TIPO MIME Y TAMAÑO (A08 OWASP) ---
+const EXT_POR_MIME: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+};
+
 const storage = multer.diskStorage({
-  destination: "uploads/profiles/",
+  destination: UPLOAD_DIR,
   filename: (_req, file, cb) =>
-    cb(null, Date.now() + "-" + file.originalname),
+    cb(
+      null,
+      `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${EXT_POR_MIME[file.mimetype] || ""}`,
+    ),
 });
 
 const fileFilter = (
@@ -24,8 +38,7 @@ const fileFilter = (
   file: Express.Multer.File,
   cb: multer.FileFilterCallback,
 ) => {
-  const allowedMimes = ["image/jpeg", "image/png", "image/webp"];
-  if (allowedMimes.includes(file.mimetype)) {
+  if (EXT_POR_MIME[file.mimetype]) {
     cb(null, true);
   } else {
     cb(
@@ -42,34 +55,46 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB máximo
 });
 
-// 1. Rutas Públicas (Sin Token)
 router.get("/public-key", authController.getPublicKeyEndpoint);
-router.post("/register", validateRegister, authController.register);
-router.post("/login", validateLogin, authController.login);
+router.post(
+  "/register",
+  authLimiter,
+  validateRegister,
+  authController.register,
+);
+router.post("/login", authLimiter, validateLogin, authController.login);
 router.post(
   "/forgot-password",
+  authLimiter,
   validateForgotPassword,
   authController.forgotPassword,
 );
 router.post(
   "/reset-password",
+  authLimiter,
   validateResetPassword,
   authController.resetPassword,
 );
 router.get("/verify-email", authController.verifyEmail);
+router.post(
+  "/verify-2fa",
+  authLimiter,
+  validateVerify2FA,
+  authController.verify2FA,
+);
 
-// 2. Rutas Protegidas (Requieren verifyToken)
 router.get("/profile", verifyToken, authController.getProfile);
 router.post("/logout", verifyToken, authController.logout);
 
-// Subida de archivos de identidad / Perfil con validación MIME y tamaño
 router.post(
   "/upload-identity",
   verifyToken,
   (req: any, res: any, next: any) => {
     upload.single("image")(req, res, (err: any) => {
       if (err instanceof multer.MulterError) {
-        return res.status(400).json({ message: "Archivo demasiado grande. Máximo 5MB." });
+        return res
+          .status(400)
+          .json({ message: "Archivo demasiado grande. Máximo 5MB." });
       } else if (err) {
         return res.status(400).json({ message: err.message });
       }
@@ -79,11 +104,7 @@ router.post(
   authController.uploadSecureFile,
 );
 
-// Gestión de seguridad
 router.put("/change-password", verifyToken, authController.changePassword);
-
-router.post("/verify-2fa", validateVerify2FA, authController.verify2FA);
-
 router.post("/setup-2fa", verifyToken, authController.setup2FA);
 
 export default router;

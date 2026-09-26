@@ -10,7 +10,7 @@ export const validateRegister = [
     .withMessage("El nombre es obligatorio.")
     .isLength({ min: 2, max: 100 })
     .withMessage("El nombre debe tener entre 2 y 100 caracteres.")
-    .escape(), // Escapa caracteres especiales para prevenir XSS
+    .escape(),
 
   body("email")
     .trim()
@@ -18,7 +18,7 @@ export const validateRegister = [
     .withMessage("El correo es obligatorio.")
     .isEmail()
     .withMessage("El correo no es válido.")
-    .normalizeEmail(), // Normaliza el email
+    .normalizeEmail(),
 
   body("password")
     .notEmpty()
@@ -74,7 +74,6 @@ export const validateResetPassword = [
   handleValidationErrors,
 ];
 
-// --- MANEJADOR DE ERRORES DE VALIDACIÓN ---
 function handleValidationErrors(
   req: Request,
   res: Response,
@@ -108,5 +107,64 @@ export const validateVerify2FA = [
     .isNumeric()
     .withMessage("El código solo debe contener números."),
 
+  handleValidationErrors,
+];
+
+export const validateContacto = [
+  body("nombre")
+    .trim()
+    .notEmpty()
+    .withMessage("El nombre es obligatorio.")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("El nombre debe tener entre 2 y 100 caracteres.")
+    .escape(),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("El correo es obligatorio.")
+    .isEmail()
+    .withMessage("El correo no es válido.")
+    .normalizeEmail(),
+
+  body("asunto")
+    .optional({ values: "falsy" })
+    .trim()
+    .isLength({ max: 150 })
+    .withMessage("El asunto no puede superar 150 caracteres.")
+    .escape(),
+
+  body("mensaje")
+    .trim()
+    .notEmpty()
+    .withMessage("El mensaje es obligatorio.")
+    .isLength({ min: 10, max: 2000 })
+    .withMessage("El mensaje debe tener entre 10 y 2000 caracteres.")
+    .escape(),
+
+  handleValidationErrors,
+];
+
+export const validateCreateStaff = [
+  body("nombre")
+    .trim()
+    .notEmpty()
+    .withMessage("El nombre es obligatorio.")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("El nombre debe tener entre 2 y 100 caracteres.")
+    .escape(),
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("El correo es obligatorio.")
+    .isEmail()
+    .withMessage("El correo no es válido.")
+    .normalizeEmail(),
+  body("password")
+    .isLength({ min: 8 })
+    .withMessage("La contraseña debe tener al menos 8 caracteres."),
+  body("rol")
+    .isIn(["A", "A_C", "A_V"])
+    .withMessage("Ese rol no puede asignarse desde este formulario."),
   handleValidationErrors,
 ];

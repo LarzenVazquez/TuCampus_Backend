@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
+import { sanitizeUser } from "../../lib/sanitize";
 
 export const getProfileFiles = async (
   req: Request,
@@ -66,15 +67,36 @@ export const updateProfile = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { nombre, telefono } = req.body;
-    await prisma.user.update({
+    const { nombre, telefono } = req.body as { nombre?: unknown; telefono?: unknown };
+
+    const data: { nombre?: string; telefono?: string | null } = {};
+
+    if (nombre !== undefined) {
+      if (typeof nombre !== "string" || nombre.trim().length < 2 || nombre.trim().length > 100) {
+        res.status(400).json({ message: "El nombre debe tener entre 2 y 100 caracteres." });
+        return;
+      }
+      data.nombre = nombre.trim();
+    }
+
+    if (telefono !== undefined) {
+      const tel = typeof telefono === "string" ? telefono.trim() : "";
+      if (tel && !/^[0-9+\-\s()]{7,20}$/.test(tel)) {
+        res.status(400).json({ message: "El teléfono no tiene un formato válido." });
+        return;
+      }
+      data.telefono = tel || null;
+    }
+
+    const actualizado = await prisma.user.update({
       where: { id: userId },
-      data: {
-        nombre,
-      },
+      data,
     });
 
-    res.status(200).json({ message: "Perfil actualizado correctamente" });
+    res.status(200).json({
+      message: "Perfil actualizado correctamente",
+      user: sanitizeUser(actualizado),
+    });
   } catch (error: any) {
     console.error("Error al actualizar perfil:", error);
     res

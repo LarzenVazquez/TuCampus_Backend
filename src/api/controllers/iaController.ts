@@ -72,31 +72,94 @@ export const train = async (req: Request, res: Response): Promise<void> => {
       }),
     );
 
-    res.json({ status: "success", items: productos.length, hora: horaActual });
+    res.json({
+      status: "success",
+      message: `IA entrenada con ${productos.length} productos (hora ${horaActual}:00).`,
+      items: productos.length,
+      hora: horaActual,
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 };
 
-const ask = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { prompt } = req.query as { prompt: string };
-    const horaActual = getMexicoHour();
-    const presupuesto = prompt?.match(/\d+/)
-      ? parseInt(prompt.match(/\d+/)![0])
-      : 999;
+const obtenerSugerencias = async (
+  filtroProducto: Record<string, unknown> = {},
+  take = 8,
+) => {
+  const horaActual = getMexicoHour();
+  const productoDisponible = {
+    estado: "DISPONIBLE",
+    stock: { gt: 0 },
+    tipo: "Cafeteria",
+    ...filtroProducto,
+  };
 
-    const sugerencias = await prisma.recommendation.findMany({
-      where: {
-        hora_prediccion: horaActual,
-        producto: { precio: { lte: presupuesto } },
-      },
-      orderBy: { score_relevancia: "desc" },
-      take: 4,
+  let sugerencias = await prisma.recommendation.findMany({
+    where: { hora_prediccion: horaActual, producto: productoDisponible },
+    orderBy: { score_relevancia: "desc" },
+    take,
+    include: { producto: true },
+  });
+
+  if (sugerencias.length === 0) {
+    sugerencias = await prisma.recommendation.findMany({
+      where: { producto: productoDisponible },
+      orderBy: [{ ultima_actualizacion: "desc" }, { score_relevancia: "desc" }],
+      distinct: ["producto_base_id"],
+      take,
       include: { producto: true },
     });
+  }
 
-    res.json({ sugerencias });
+  return { horaActual, sugerencias };
+};
+
+const ask = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const prompt = String((req.query as any).prompt || "").slice(0, 200);
+    const texto = prompt.toLowerCase();
+
+    const numero = texto.match(/\d+/);
+    const presupuesto = numero ? parseInt(numero[0], 10) : null;
+    const ligero = /ligero|light|saludable|bajo en calor/i.test(texto);
+    const rapido = /r[aá]pido|prisa|<\s*10|menos de 10 min/i.test(texto);
+
+    const categorias = await prisma.product.findMany({
+      where: { tipo: "Cafeteria" },
+      select: { categoria: true },
+      distinct: ["categoria"],
+    });
+    const categoria = categorias
+      .map((c) => c.categoria)
+      .find((c) => c && texto.includes(c.toLowerCase()));
+
+    const filtro: Record<string, unknown> = {};
+    if (presupuesto !== null) filtro.precio = { lte: presupuesto };
+    if (ligero) filtro.calorias = { lt: 400 };
+    if (rapido) filtro.tiempoPrepMin = { lte: 10 };
+    if (categoria) filtro.categoria = categoria;
+
+    const { sugerencias } = await obtenerSugerencias(filtro, 4);
+
+    res.json({
+      sugerencias,
+      productos: sugerencias.map((s) => s.producto),
+      filtros: { presupuesto, ligero, rapido, categoria: categoria ?? null },
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const results = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const { horaActual, sugerencias } = await obtenerSugerencias({}, 8);
+    res.json({
+      hora: horaActual,
+      sugerencias,
+      productos: sugerencias.map((s) => s.producto),
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -110,10 +173,6 @@ const reset = async (_req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
-};
-
-const results = async (req: Request, res: Response): Promise<void> => {
-  res.json({ message: "Endpoint no implementado aún" });
 };
 
 export const iaController = {

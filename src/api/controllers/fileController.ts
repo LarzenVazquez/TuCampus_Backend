@@ -29,7 +29,6 @@ export const uploadProfileImage = async (
       .update(fileBuffer)
       .digest("hex");
 
-    // Preparar subida a ImgBB
     const form = new FormData();
     form.append("image", fileBuffer.toString("base64"));
 
@@ -50,7 +49,6 @@ export const uploadProfileImage = async (
       },
     });
 
-    // Limpieza de archivo temporal
     if (fs.existsSync(file.path)) {
       fs.unlinkSync(file.path);
     }

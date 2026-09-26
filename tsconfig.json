@@ -19,6 +19,6 @@
   "include": [
     "src/**/*",
     "server.ts",
-    "app.js"
+    "app.ts"
   ]
 }

@@ -31,28 +31,21 @@ export const verifyToken = (
     res.status(403).json({ error: "Token inválido o expirado" });
   }
 };
-
-const checkRole = (
-  role: string,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const rol = req.user?.rol?.trim();
-  if (req.user && rol === role) {
-    next();
-  } else {
+export const hasRole =
+  (...roles: string[]) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    const rol = req.user?.rol?.trim();
+    if (req.user && rol && roles.includes(rol)) {
+      next();
+      return;
+    }
     res.status(403).json({
-      error: `Acceso denegado: Se requiere rol ${role}`,
+      error: `Acceso denegado: Se requiere rol ${roles.join(" o ")}`,
     });
-  }
-};
+  };
 
-export const isAdmin = (req: Request, res: Response, next: NextFunction) =>
-  checkRole("A", req, res, next);
-export const isAdminC = (req: Request, res: Response, next: NextFunction) =>
-  checkRole("A_C", req, res, next);
-export const isSeller = (req: Request, res: Response, next: NextFunction) =>
-  checkRole("A_V", req, res, next);
-export const isAlumno = (req: Request, res: Response, next: NextFunction) =>
-  checkRole("Al", req, res, next);
+export const isAdmin = hasRole("A");
+export const isAdminC = hasRole("A_C");
+export const isStaff = hasRole("A", "A_C");
+export const isSeller = hasRole("A_V", "A");
+export const isAlumno = hasRole("Al");

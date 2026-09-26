@@ -1,32 +1,93 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
+import { conIdLegado, listaConIdLegado } from "../../lib/legacyAlias";
+import { notificarUsuario } from "../../services/notificationService";
+
+const IMG_DEFAULT =
+  "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e";
+const ESTATUS_VALIDOS = [
+  "pendiente",
+  "activo",
+  "vendido",
+  "rechazado",
+  "bando",
+];
+
+const paramId = (req: Request) =>
+  Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+const vendedorSelect = {
+  vendedor: { select: { id: true, nombre: true } },
+} as const;
+
+const conVendedor = (item: any) =>
+  conIdLegado({
+    ...item,
+    nombreVendedor: item.vendedor?.nombre?.split(" ")[0] ?? "Usuario",
+  });
+
+const leerAnuncio = (body: any, parcial = false) => {
+  const data: Record<string, unknown> = {};
+
+  if (body.titulo !== undefined || !parcial) {
+    const titulo = typeof body.titulo === "string" ? body.titulo.trim() : "";
+    if (titulo.length < 3 || titulo.length > 100)
+      return { error: "El título debe tener entre 3 y 100 caracteres." };
+    data.titulo = titulo;
+  }
+  if (body.precio !== undefined || !parcial) {
+    const precio = Number(body.precio);
+    if (!Number.isFinite(precio) || precio <= 0 || precio > 100000)
+      return { error: "El precio debe ser un número mayor a 0." };
+    data.precio = precio;
+  }
+  if (body.descripcion !== undefined || !parcial) {
+    const descripcion =
+      typeof body.descripcion === "string" ? body.descripcion.trim() : "";
+    if (descripcion.length > 2000)
+      return { error: "La descripción es demasiado larga." };
+    data.descripcion = descripcion;
+  }
+  if (body.categoria !== undefined || !parcial) {
+    const categoria =
+      typeof body.categoria === "string" && body.categoria.trim()
+        ? body.categoria.trim()
+        : "Otros";
+    data.categoria = categoria.slice(0, 50);
+  }
+  if (body.imagenes !== undefined || !parcial) {
+    const imagenes = Array.isArray(body.imagenes)
+      ? body.imagenes
+          .filter(
+            (u: unknown) => typeof u === "string" && /^https?:\/\//i.test(u),
+          )
+          .slice(0, 6)
+      : [];
+    data.imagenes = imagenes.length > 0 ? imagenes : [IMG_DEFAULT];
+  }
+  return { data };
+};
 
 export const marketController = {
   publishItem: async (req: Request, res: Response): Promise<void> => {
     try {
-      const { titulo, precio, descripcion, categoria, imagenes } = req.body;
-      const userId = req.user!.id;
+      const { data, error } = leerAnuncio(req.body);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
 
       const nuevoItem = await prisma.market.create({
         data: {
-          vendedorId: userId,
-          titulo,
-          precio,
-          descripcion,
-          categoria,
-          imagenes:
-            imagenes && imagenes.length > 0
-              ? imagenes
-              : [
-                  "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e",
-                ],
+          ...(data as any),
+          vendedorId: req.user!.id,
           estatus: "pendiente",
         },
       });
 
       res.status(201).json({
         message: "Producto enviado a revisión. Estará visible pronto.",
-        item: nuevoItem,
+        item: conIdLegado(nuevoItem),
       });
     } catch (error: any) {
       res
@@ -40,15 +101,10 @@ export const marketController = {
       const items = await prisma.market.findMany({
         where: { estatus: "activo" },
         orderBy: { fechaPublicacion: "desc" },
-        include: { vendedor: { select: { nombre: true } } },
+        include: vendedorSelect,
       });
 
-      const itemsConNombre = items.map((item) => ({
-        ...item,
-        nombreVendedor: item.vendedor.nombre.split(" ")[0],
-      }));
-
-      res.json(itemsConNombre);
+      res.json(items.map(conVendedor));
     } catch (error: any) {
       res
         .status(500)
@@ -58,21 +114,21 @@ export const marketController = {
 
   updateItem: async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
-      const { titulo, precio, descripcion, categoria, imagenes } = req.body;
+      const id = paramId(req);
+      const { data, error } = leerAnuncio(req.body, true);
+      if (error) {
+        res.status(400).json({ message: error });
+        return;
+      }
+
+      const soloVendido =
+        req.body?.estatus === "vendido" && Object.keys(data!).length === 0;
 
       const item = await prisma.market.updateMany({
         where: { id, vendedorId: req.user!.id },
-        data: {
-          titulo,
-          precio,
-          descripcion,
-          categoria,
-          imagenes,
-          estatus: "pendiente",
-        },
+        data: soloVendido
+          ? { estatus: "vendido" }
+          : { ...(data as any), estatus: "pendiente", motivoRechazo: null },
       });
 
       if (item.count === 0) {
@@ -82,7 +138,11 @@ export const marketController = {
         return;
       }
 
-      res.json({ message: "Producto actualizado y enviado a revisión" });
+      res.json({
+        message: soloVendido
+          ? "Anuncio marcado como vendido"
+          : "Producto actualizado y enviado a revisión",
+      });
     } catch (error: any) {
       res
         .status(400)
@@ -92,19 +152,31 @@ export const marketController = {
 
   deleteItem: async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
+      const id = paramId(req);
       const isAdmin = req.user!.rol === "A" || req.user!.rol === "A_C";
-
       const query = isAdmin ? { id } : { id, vendedorId: req.user!.id };
 
-      const deleted = await prisma.market.deleteMany({ where: query });
-
-      if (deleted.count === 0) {
+      const existe = await prisma.market.findFirst({
+        where: query,
+        select: { id: true },
+      });
+      if (!existe) {
         res.status(404).json({ message: "No se pudo eliminar el producto" });
         return;
       }
+
+      await prisma.$transaction(async (tx) => {
+        const chats = await tx.chat.findMany({
+          where: { productoId: id },
+          select: { id: true },
+        });
+        const chatIds = chats.map((c) => c.id);
+        if (chatIds.length > 0) {
+          await tx.message.deleteMany({ where: { chatId: { in: chatIds } } });
+          await tx.chat.deleteMany({ where: { id: { in: chatIds } } });
+        }
+        await tx.market.delete({ where: { id } });
+      });
 
       res.json({ message: "Producto eliminado correctamente" });
     } catch (error: any) {
@@ -116,19 +188,50 @@ export const marketController = {
 
   moderateItem: async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
-      const { estatus, motivoRechazo } = req.body;
+      const id = paramId(req);
+      const { estatus, motivoRechazo } = req.body as {
+        estatus?: string;
+        motivoRechazo?: string;
+      };
 
-      const item = await prisma.market.update({
-        where: { id },
-        data: { estatus, motivoRechazo },
+      if (!estatus || !ESTATUS_VALIDOS.includes(estatus)) {
+        res.status(400).json({ message: "Estatus no válido." });
+        return;
+      }
+
+      const item = await prisma.$transaction(async (tx) => {
+        const actualizado = await tx.market.update({
+          where: { id },
+          data: {
+            estatus,
+            motivoRechazo:
+              estatus === "rechazado"
+                ? (motivoRechazo || "").slice(0, 300) || null
+                : null,
+          },
+        });
+        await tx.activityLog.create({
+          data: {
+            userId: req.user!.id,
+            accion: `MARKET_${estatus.toUpperCase()}`,
+            descripcion: `Moderó el anuncio "${actualizado.titulo}" -> ${estatus}${estatus === "rechazado" && motivoRechazo ? ` (${motivoRechazo})` : ""}`,
+            ip_address: req.ip,
+          },
+        });
+        return actualizado;
       });
+
+      const mensajes: Record<string, string> = {
+        activo: `Tu anuncio "${item.titulo}" fue aprobado y ya está visible.`,
+        rechazado: `Tu anuncio "${item.titulo}" fue rechazado${item.motivoRechazo ? `: ${item.motivoRechazo}` : "."}`,
+        bando: `Tu anuncio "${item.titulo}" fue suspendido por moderación.`,
+      };
+      if (mensajes[estatus])
+        notificarUsuario(req.app.get("io"), item.vendedorId, mensajes[estatus]);
 
       res.json({
         message: `Estatus cambiado a ${estatus} correctamente`,
-        item,
+        item: conIdLegado(item),
       });
     } catch (error: any) {
       res
@@ -141,8 +244,9 @@ export const marketController = {
     try {
       const items = await prisma.market.findMany({
         where: { vendedorId: req.user!.id },
+        orderBy: { fechaPublicacion: "desc" },
       });
-      res.json(items);
+      res.json(listaConIdLegado(items));
     } catch (error: any) {
       res.status(500).json({
         message: "Error al obtener tus anuncios",
@@ -156,8 +260,9 @@ export const marketController = {
       const items = await prisma.market.findMany({
         where: { estatus: "pendiente" },
         orderBy: { fechaPublicacion: "desc" },
+        include: vendedorSelect,
       });
-      res.json(items);
+      res.json(items.map(conVendedor));
     } catch (error: any) {
       res.status(500).json({
         message: "Error al obtener productos pendientes",
@@ -168,13 +273,13 @@ export const marketController = {
 
   getMarketStats: async (_req: Request, res: Response): Promise<void> => {
     try {
-      const pendientes = await prisma.market.count({
-        where: { estatus: "pendiente" },
-      });
-      const activos = await prisma.market.count({
-        where: { estatus: "activo" },
-      });
-      res.json({ pendientes, activos });
+      const [pendientes, activos, vendidos, rechazados] = await Promise.all([
+        prisma.market.count({ where: { estatus: "pendiente" } }),
+        prisma.market.count({ where: { estatus: "activo" } }),
+        prisma.market.count({ where: { estatus: "vendido" } }),
+        prisma.market.count({ where: { estatus: "rechazado" } }),
+      ]);
+      res.json({ pendientes, activos, vendidos, rechazados });
     } catch (error: any) {
       res.status(500).json({ message: "Error en stats de market" });
     }
@@ -182,16 +287,25 @@ export const marketController = {
 
   getItemById: async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
-      const item = await prisma.market.findUnique({ where: { id } });
+      const id = paramId(req);
+      const item = await prisma.market.findUnique({
+        where: { id },
+        include: vendedorSelect,
+      });
 
-      if (!item) {
+      const esDueno = item?.vendedorId === req.user?.id;
+      const esStaff = req.user?.rol === "A" || req.user?.rol === "A_C";
+      if (
+        !item ||
+        (item.estatus !== "activo" &&
+          item.estatus !== "vendido" &&
+          !esDueno &&
+          !esStaff)
+      ) {
         res.status(404).json({ message: "Producto no encontrado" });
         return;
       }
-      res.json(item);
+      res.json(conVendedor(item));
     } catch (error: any) {
       res
         .status(400)

@@ -14,6 +14,7 @@ export const getMisNotificaciones = async (
     const notifs = await prisma.notificacion.findMany({
       where: { userId: req.user.id },
       orderBy: { fecha: "desc" },
+      take: 50,
     });
 
     res.json(notifs);
@@ -54,7 +55,19 @@ export const marcarLeidas = async (
   }
 };
 
+export const limpiar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { count } = await prisma.notificacion.deleteMany({
+      where: { userId: req.user!.id },
+    });
+    res.json({ message: "Notificaciones eliminadas", eliminadas: count });
+  } catch (error: any) {
+    res.status(500).json({ message: "Error al limpiar notificaciones" });
+  }
+};
+
 export const notificationController = {
   getMisNotificaciones,
   marcarLeidas,
+  limpiar,
 };

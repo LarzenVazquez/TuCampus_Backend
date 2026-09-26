@@ -18,6 +18,7 @@ model User {
   email               String   @unique
   password            String
   matricula           String?
+  telefono            String?
   rol                 String   @default("Al")
   vendedor_verificado Boolean  @default(false)
   email_verificado    Boolean  @default(false)
@@ -205,4 +206,17 @@ model Recommendation {
   ultima_actualizacion   DateTime @default(now())
 
   @@unique([producto_base_id, hora_prediccion])
+}
+
+model ContactoMensaje {
+  @@schema("business")
+  id         String   @id @default(uuid())
+  nombre     String
+  email      String
+  asunto     String?
+  mensaje    String
+  respondido Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([respondido, created_at])
 }

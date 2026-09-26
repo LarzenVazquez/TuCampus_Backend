@@ -11,19 +11,44 @@ const authenticator = otplib.authenticator;
 import prisma from "../../lib/prismaClient";
 import { decryptrsa, getpublickey } from "../../utils/cryptoHelper";
 import { sendEmail } from "../../lib/emailService";
+import { resolveFrontendBase, frontendPaths } from "../../lib/appConfig";
+import { sanitizeUser } from "../../lib/sanitize";
 
-// Interfaz local para evitar errores de compilación
+const firmarToken = (user: {
+  id: string;
+  rol: string;
+  email: string;
+  nombre: string;
+}) =>
+  jwt.sign(
+    { id: user.id, rol: user.rol, email: user.email, nombre: user.nombre },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "24h" },
+  );
+
+const usuarioDeSesion = (user: any) => ({
+  id: user.id,
+  nombre: user.nombre,
+  rol: user.rol,
+  email: user.email,
+  matricula: user.matricula ?? null,
+  fotoUrl: user.userFiles?.[0]?.url_archivo || null,
+  vendedor_verificado: user.vendedor_verificado,
+  email_verificado: user.email_verificado,
+  es_becado: user.es_becado,
+  activo: user.activo,
+  two_factor_enabled: user.two_factor_enabled,
+  created_at: user.created_at,
+});
+
 interface AuthenticatedRequest extends Request {
   user?: { id: string; rol: string; email: string; nombre: string };
 }
 
-
-/* 1. Llave Pública RSA */
 export const getPublicKeyEndpoint = (_req: Request, res: Response) => {
   res.json({ publicKey: getpublickey() });
 };
 
-/* 2. REGISTRO */
 export const register = async (req: Request, res: Response) => {
   try {
     const { nombre, email, password, matricula } = req.body;
@@ -39,7 +64,7 @@ export const register = async (req: Request, res: Response) => {
     const verifyToken = jwt.sign({ email }, process.env.JWT_SECRET as string, {
       expiresIn: "24h",
     });
-    const verifyLink = `https://tucampus.vercel.app/auth/verify-email.html?token=${verifyToken}`;
+    const verifyLink = `${resolveFrontendBase(req)}${frontendPaths.verifyEmail}?token=${encodeURIComponent(verifyToken)}`;
 
     await sendEmail(
       email,
@@ -84,32 +109,33 @@ export const register = async (req: Request, res: Response) => {
       userId: newUser.id,
     });
   } catch (error: any) {
-    console.error("❌ ERROR REGISTRO:", error);
+    console.error(" ERROR REGISTRO:", error);
     res
       .status(500)
       .json({ message: "Error al registrar", error: error.message });
   }
 };
 
-/* 3. VERIFICAR EMAIL */
 export const verifyEmail = async (req: Request, res: Response) => {
   try {
     const { token } = req.query as { token: string };
+    if (!token)
+      return res.status(400).json({ error: "Falta el token de verificación." });
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       email: string;
     };
+    if (!decoded?.email) throw new Error("Token sin correo");
     await prisma.user.update({
       where: { email: decoded.email },
       data: { email_verificado: true },
     });
     res.json({ message: "¡Correo verificado!" });
   } catch (error: any) {
-    console.error("❌ ERROR VERIFY EMAIL:", error);
+    console.error(" ERROR VERIFY EMAIL:", error);
     res.status(400).json({ error: "El enlace expiró o es inválido." });
   }
 };
 
-/* 4. LOGIN */
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, encryptedPassword, encryptedAesKey, iv, captchaToken } =
@@ -147,15 +173,13 @@ export const login = async (req: Request, res: Response) => {
     const passwordPlana = decipher.output.toString();
     const user = await prisma.user.findUnique({
       where: { email },
-      include: { archivos: true },
+      include: { userFiles: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
 
     if (!user || !(await bcrypt.compare(passwordPlana, user.password))) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
 
-    // Cuenta desactivada por un administrador: se bloquea el acceso antes
-    // de cualquier otra validación (2FA, verificación de correo, etc.)
     if (user.activo === false) {
       return res.status(403).json({
         message: "Tu cuenta ha sido desactivada. Contacta a administración.",
@@ -165,7 +189,6 @@ export const login = async (req: Request, res: Response) => {
     if (!user.email_verificado)
       return res.status(403).json({ message: "Verifica tu correo" });
 
-    // 2. INTERCEPCIÓN DEL FLUJO PARA CONTROLAR EL DOBLE FACTOR
     if (user.two_factor_enabled) {
       return res.json({
         status: "2FA_REQUIRED",
@@ -174,54 +197,33 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Flujo normal sin 2FA activo
-    const token = jwt.sign(
-      { id: user.id, rol: user.rol, email: user.email },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "24h" },
-    );
-
     res.json({
       status: "success",
-      token,
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        rol: user.rol,
-        email: user.email,
-        fotoUrl: user.archivos[0]?.url_archivo || null,
-        vendedor_verificado: user.vendedor_verificado,
-        es_becado: user.es_becado,
-      },
+      token: firmarToken(user),
+      user: usuarioDeSesion(user),
     });
   } catch (error: any) {
-    console.error("❌ ERROR LOGIN:", error);
+    console.error(" ERROR LOGIN:", error);
     res
       .status(500)
       .json({ message: "Error al iniciar sesión", error: error.message });
   }
 };
 
-/* 4.5 ENDPOINTS DE CONFIGURACIÓN Y VERIFICACIÓN 2FA */
-
-// Activa el servicio y genera el código base para la aplicación móvil
 export const setup2FA = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   try {
     if (!authReq.user)
       return res.status(401).json({ message: "No autorizado" });
 
-    // Genera clave secreta Base32 única
     const secret = authenticator.generateSecret();
 
-    // Construye el URI compatible con Google Authenticator
     const otpauthUrl = authenticator.keyuri(
       authReq.user.email,
       "TuCampus",
       secret,
     );
 
-    // Persiste el secreto de forma temporal en el usuario
     await prisma.user.update({
       where: { id: authReq.user.id },
       data: { two_factor_secret: secret },
@@ -229,24 +231,23 @@ export const setup2FA = async (req: Request, res: Response) => {
 
     res.json({
       secret,
-      otpauthUrl, // Este string es el que el frontend usa para pintar el código QR
+      otpauthUrl,
     });
   } catch (error: any) {
-    console.error("❌ ERROR SETUP 2FA:", error);
+    console.error(" ERROR SETUP 2FA:", error);
     res
       .status(500)
       .json({ message: "Error al configurar 2FA", error: error.message });
   }
 };
 
-// Verifica el código dinámico para completar el inicio de sesión
 export const verify2FA = async (req: Request, res: Response) => {
   try {
     const { userId, code } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { archivos: true },
+      include: { userFiles: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
 
     if (!user || !user.two_factor_secret) {
@@ -261,8 +262,7 @@ export const verify2FA = async (req: Request, res: Response) => {
       });
     }
 
-    // Validación matemática simétrica contra la marca de tiempo (ventana +/- 30 segundos)
-    const isValid = authenticator.check(code, user.two_factor_secret);
+    const isValid = authenticator.check(String(code), user.two_factor_secret);
 
     if (!isValid) {
       return res
@@ -270,7 +270,6 @@ export const verify2FA = async (req: Request, res: Response) => {
         .json({ message: "Código dinámico incorrecto o expirado." });
     }
 
-    // Si es válido por primera vez durante la configuración, asegura el flag de activación
     if (!user.two_factor_enabled) {
       await prisma.user.update({
         where: { id: user.id },
@@ -278,28 +277,13 @@ export const verify2FA = async (req: Request, res: Response) => {
       });
     }
 
-    // Generación final del JWT firmado
-    const token = jwt.sign(
-      { id: user.id, rol: user.rol, email: user.email },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "24h" },
-    );
-
     res.json({
       status: "success",
-      token,
-      user: {
-        id: user.id,
-        nombre: user.nombre,
-        rol: user.rol,
-        email: user.email,
-        fotoUrl: user.archivos[0]?.url_archivo || null,
-        vendedor_verificado: user.vendedor_verificado,
-        es_becado: user.es_becado,
-      },
+      token: firmarToken({ ...user, two_factor_enabled: true } as any),
+      user: usuarioDeSesion({ ...user, two_factor_enabled: true }),
     });
   } catch (error: any) {
-    console.error("❌ ERROR VERIFY 2FA:", error);
+    console.error(" ERROR VERIFY 2FA:", error);
     res.status(500).json({
       message: "Error interno al validar factor",
       error: error.message,
@@ -307,7 +291,6 @@ export const verify2FA = async (req: Request, res: Response) => {
   }
 };
 
-/* 5. SUBIDA DE ARCHIVOS */
 export const uploadSecureFile = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   try {
@@ -339,24 +322,40 @@ export const uploadSecureFile = async (req: Request, res: Response) => {
     });
 
     fs.unlinkSync(authReq.file.path);
-    res.json({ status: "success", url: imgbbRes.data.data.url });
+    res.json({
+      status: "success",
+      url: imgbbRes.data.data.url,
+      fotoUrl: imgbbRes.data.data.url,
+    });
   } catch (error: any) {
-    console.error("❌ ERROR UPLOAD:", error);
-    if (authReq.file) fs.unlinkSync(authReq.file.path);
+    console.error(" ERROR UPLOAD:", error);
+    if (authReq.file && fs.existsSync(authReq.file.path))
+      fs.unlinkSync(authReq.file.path);
     res.status(500).json({ message: "Error al subir", error: error.message });
   }
 };
 
-/* 6. PERFIL Y SESIONES */
 export const getProfile = async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   if (!authReq.user) return res.status(401).json({ message: "No autorizado" });
 
-  const user = await prisma.user.findUnique({
-    where: { id: authReq.user.id },
-    include: { archivos: true },
-  });
-  res.json({ ...user, fotoUrl: user?.archivos[0]?.url_archivo });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: authReq.user.id },
+      include: { userFiles: { orderBy: { createdAt: "desc" }, take: 1 } },
+    });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const { userFiles, ...resto } = user;
+    res.json({
+      ...sanitizeUser(resto),
+      fotoUrl: userFiles[0]?.url_archivo || null,
+    });
+  } catch (error: any) {
+    console.error(" ERROR PROFILE:", error);
+    res.status(500).json({ message: "Error al obtener el perfil" });
+  }
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -394,17 +393,20 @@ export const changePassword = async (req: Request, res: Response) => {
     )
       return res.status(400).json({ message: "Contraseña actual incorrecta" });
 
-    const hashedNewPassword = await bcrypt.hash(
-      decrypt(encryptedNewPassword),
-      10,
-    );
+    const nuevaPlana = decrypt(encryptedNewPassword);
+    if (!nuevaPlana || nuevaPlana.length < 8)
+      return res.status(400).json({
+        message: "La nueva contraseña debe tener al menos 8 caracteres.",
+      });
+
+    const hashedNewPassword = await bcrypt.hash(nuevaPlana, 10);
     await prisma.user.update({
       where: { id: user.id },
       data: { password: hashedNewPassword },
     });
     res.json({ message: "Contraseña actualizada" });
   } catch (error: any) {
-    console.error("❌ ERROR CHANGE PASSWORD:", error);
+    console.error(" ERROR CHANGE PASSWORD:", error);
     res.status(500).json({ message: "Error interno", error: error.message });
   }
 };
@@ -415,19 +417,46 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user) {
       const resetToken = jwt.sign(
-        { id: user.id },
+        { id: user.id, purpose: "reset" },
         process.env.JWT_SECRET as string,
         { expiresIn: "1h" },
       );
+      const resetLink = `${resolveFrontendBase(req)}${frontendPaths.resetPassword}?token=${encodeURIComponent(resetToken)}`;
       await sendEmail(
         email,
-        "Recuperación",
-        `<a href=".../${resetToken}">Reset</a>`,
+        "Recupera tu contraseña - TuCampus",
+        `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f7; padding: 32px 16px;">
+        <div style="max-width: 480px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <div style="background-color: #4f46e5; padding: 28px 32px; text-align: center;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700;">TuCampus</h1>
+          </div>
+          <div style="padding: 32px;">
+            <h2 style="margin: 0 0 12px; color: #111827; font-size: 20px;">Hola, ${user.nombre}</h2>
+            <p style="margin: 0 0 20px; color: #4b5563; font-size: 15px; line-height: 1.5;">
+              Recibimos una solicitud para restablecer la contraseña de tu cuenta. Da clic en el botón para crear una nueva:
+            </p>
+            <div style="text-align: center; margin: 28px 0;">
+              <a href="${resetLink}" style="background-color: #4f46e5; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 32px; border-radius: 8px; display: inline-block;">
+                Restablecer contraseña
+              </a>
+            </div>
+            <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; line-height: 1.5;">
+              Este enlace es válido por <strong>1 hora</strong>. Si tú no lo solicitaste, puedes ignorar este correo.
+            </p>
+            <p style="margin: 20px 0 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
+              Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+              <span style="word-break: break-all; color: #6b7280;">${resetLink}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      `,
       );
     }
     res.json({ message: "Correo enviado si existe la cuenta." });
   } catch (error: any) {
-    console.error("❌ ERROR FORGOT PASSWORD:", error);
+    console.error(" ERROR FORGOT PASSWORD:", error);
     res.status(500).json({ message: "Error interno", error: error.message });
   }
 };
@@ -435,9 +464,20 @@ export const forgotPassword = async (req: Request, res: Response) => {
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { token, newPassword } = req.body;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-      id: string;
-    };
+    let decoded: { id?: string; purpose?: string };
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+    } catch {
+      return res
+        .status(400)
+        .json({ message: "El enlace expiró o es inválido." });
+    }
+
+    if (!decoded?.id || decoded.purpose !== "reset") {
+      return res
+        .status(400)
+        .json({ message: "El enlace expiró o es inválido." });
+    }
     const hashed = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: decoded.id },
@@ -445,7 +485,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
     res.json({ message: "Contraseña restablecida" });
   } catch (error: any) {
-    console.error("❌ ERROR RESET PASSWORD:", error);
+    console.error(" ERROR RESET PASSWORD:", error);
     res.status(500).json({ message: "Error interno", error: error.message });
   }
 };
@@ -455,7 +495,7 @@ export const authController = {
   register,
   verifyEmail,
   login,
-  setup2FA, 
+  setup2FA,
   verify2FA,
   uploadSecureFile,
   getProfile,

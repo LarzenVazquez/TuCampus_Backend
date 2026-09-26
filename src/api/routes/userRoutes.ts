@@ -5,7 +5,6 @@ import { verifyToken } from "../../middlewares/authMiddleware";
 
 const router = Router();
 
-// Definimos la interfaz localmente para evitar errores globales
 interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
@@ -15,13 +14,12 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-// 1. Obtener perfil completo
 router.get("/profile", verifyToken, authController.getProfile);
 router.put("/profile", verifyToken, userController.updateProfile);
 
-// 2. Validación rápida de sesión
+router.get("/files", verifyToken, userController.getProfileFiles);
+
 router.get("/check-session", verifyToken, (req: Request, res: Response) => {
-  // Aplicamos el casting aquí
   const authReq = req as AuthenticatedRequest;
 
   if (!authReq.user) {
@@ -35,10 +33,9 @@ router.get("/check-session", verifyToken, (req: Request, res: Response) => {
       id: authReq.user.id,
       rol: authReq.user.rol,
       email: authReq.user.email,
+      nombre: authReq.user.nombre,
     },
   });
 });
 
 export default router;
-
-export { router };

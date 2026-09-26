@@ -4,8 +4,8 @@ import { notificationController } from "../controllers/notificationController";
 
 const router = Router();
 
-// Rutas para gestionar notificaciones
 router.get("/", verifyToken, notificationController.getMisNotificaciones);
 router.put("/read", verifyToken, notificationController.marcarLeidas);
+router.delete("/", verifyToken, notificationController.limpiar);
 
 export default router;

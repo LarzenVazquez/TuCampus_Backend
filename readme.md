@@ -1,61 +1,52 @@
-A : Administrador General (Control total del sistema).
+# TuCampus — Backend
 
-A_C : Admin de Cafetería (Gestión de inventario y pedidos de comida).
+API REST + WebSockets de TuCampus (Express 5, Prisma 7 / PostgreSQL, Socket.IO).
+Un solo backend atiende a **los dos frontends**:
 
-Al : Alumno (Usuario base, compras y navegación).
+| Frontend                     | Carpeta             | Dev                     |
+| ---------------------------- | ------------------- | ----------------------- |
+| Vite (multipágina, original) | `TuCampus_Frontend` | `http://localhost:5173` |
+| Angular (SPA/SSR, nuevo)     | `TuCampus_Front_A`  | `http://localhost:4200` |
 
-A_V : Alumno Vendedor (Alumno verificado para vender en Marketplace).
+## Roles
 
+| Sigla | Rol                                                     |
+| ----- | ------------------------------------------------------- |
+| `A`   | Administrador General (control total)                   |
+| `A_C` | Admin de Cafetería (inventario, KDS, pedidos)           |
+| `Al`  | Alumno (usuario base)                                   |
+| `A_V` | Alumno Vendedor (verificado para vender en Marketplace) |
 
-DROP DATABASE IF EXISTS tucampus_sql;
-CREATE DATABASE tucampus_sql;
-USE tucampus_sql;
+## Puesta en marcha
 
--- 1. TABLA DE USUARIOS (Con lógica de siglas)
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    matricula VARCHAR(50) UNIQUE,
-    rol ENUM('A', 'A_C', 'Al', 'A_V') NOT NULL DEFAULT 'Al',
-    vendedor_verificado TINYINT(1) DEFAULT 0, -- 0: No, 1: Si
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_rol (rol)
-);
+```bash
+npm install
+cp .env.example .env
+npx prisma generate
+npm run dev
+```
 
--- 2. TABLA DE SESIONES (Tokens JWT)
-CREATE TABLE sessions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    token VARCHAR(500) NOT NULL,
-    expira_en DATETIME NOT NULL,
-    CONSTRAINT fk_session_user FOREIGN KEY (user_id) 
-        REFERENCES users(id) ON DELETE CASCADE
-);
+### Migración nueva (contacto + teléfono)
 
--- 3. TABLA DE ARCHIVOS (Evidencia de Vendedores / Imágenes)
-CREATE TABLE user_files (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    nombre_archivo VARCHAR(255) NOT NULL,
-    url_archivo VARCHAR(255) NOT NULL,
-    file_hash VARCHAR(64) NOT NULL,
-    tipo_archivo VARCHAR(50),
-    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_files_user FOREIGN KEY (user_id) 
-        REFERENCES users(id) ON DELETE CASCADE
-);
+Esta versión agrega la tabla `business.ContactoMensaje` y la columna
+opcional `auth.User.telefono`. El SQL es idempotente (`IF NOT EXISTS`), así
+que se puede aplicar sin riesgo sobre la base existente:
 
--- 4. TABLA DE LOGS (Auditoría de acciones)
-CREATE TABLE activity_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    accion VARCHAR(255) NOT NULL,
-    descripcion TEXT,
-    ip_address VARCHAR(45),
-    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_logs_user FOREIGN KEY (user_id) 
-        REFERENCES users(id) ON DELETE SET NULL
-);
+```bash
+psql "$DATABASE_URL" -f prisma/migrations/20260926120000_add_contacto_y_telefono/migration.sql
+```
+
+(o `npx prisma migrate deploy` si tu historial de migraciones está al día).
+
+## Scripts
+
+| Script                      | Qué hace                                  |
+| --------------------------- | ----------------------------------------- |
+| `npm run dev` / `npm start` | Levanta el servidor                       |
+| `npm test`                  | Pruebas (Prisma simulado, no requiere BD) |
+| `npm run test:kds`          | Pruebas del modelo de saturación del KDS  |
+| `npm run typecheck`         | Chequeo de tipos de TypeScript            |
+| `npm run seed`              | Datos de ejemplo                          |
+
+Consulta **`CAMBIOS.md`** para el detalle de lo que se corrigió y del
+contrato de la API que usan los frontends.
