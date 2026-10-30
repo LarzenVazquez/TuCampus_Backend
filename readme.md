@@ -56,6 +56,14 @@ npm run migrar:imagenes
 
 Las que no se puedan descargar conservan su URL y aparecen en el reporte.
 
+### Migración nueva (solicitudes de beca, RQF24)
+
+Agrega la tabla `business.SolicitudBeca`. Es idempotente:
+
+```bash
+psql "$DATABASE_URL" -f prisma/migrations/20261029120100_solicitudes_beca/migration.sql
+```
+
 ### Variables de entorno nuevas
 
 | Variable                     | Valor recomendado                           | Uso                                                                 |

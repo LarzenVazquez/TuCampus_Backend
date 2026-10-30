@@ -16,6 +16,7 @@ import chatRoutes from "./src/api/routes/chatRoutes";
 import iaRoutes from "./src/api/routes/iaRoutes";
 import contactoRoutes from "./src/api/routes/contactoRoutes";
 import imageRoutes from "./src/api/routes/imageRoutes";
+import becaRoutes from "./src/api/routes/becaRoutes";
 import { imagenesAbsolutas } from "./src/api/controllers/imageController";
 import { corsOriginCallback } from "./src/lib/appConfig";
 import { generalLimiter } from "./src/middlewares/rateLimiters";
@@ -64,6 +65,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ia", iaRoutes);
 app.use("/api/contacto", contactoRoutes);
+app.use("/api/becas", becaRoutes);
 
 app.get("/api/ping", (req: Request, res: Response) => {
   res.status(200).json({

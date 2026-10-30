@@ -46,6 +46,7 @@ io.on("connection", (socket: Socket) => {
     socket.join(autenticado.id);
     if (autenticado.rol === "A_C" || autenticado.rol === "A")
       socket.join("staff");
+    if (autenticado.rol === "A") socket.join("admin");
   }
 
   socket.on("join_user_room", (userId: string) => {

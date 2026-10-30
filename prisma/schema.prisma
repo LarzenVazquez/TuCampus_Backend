@@ -41,6 +41,7 @@ model User {
   chatsComprador Chat[]         @relation("Comprador")
   chatsVendedor  Chat[]         @relation("Vendedor")
   userFiles      UserFile[]
+  solicitudesBeca SolicitudBeca[]
 }
 
 model UserFile {
@@ -237,4 +238,23 @@ model ImageFile {
   created_at DateTime @default(now())
 
   @@index([modulo])
+}
+
+model SolicitudBeca {
+  @@schema("business")
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  matricula      String
+  telefono       String
+  correo         String
+  motivo         String
+  estatus        String    @default("Pendiente")
+  comentario     String?
+  revisadoPor    String?
+  fecha_revision DateTime?
+  created_at     DateTime  @default(now())
+
+  @@index([userId, estatus])
+  @@index([estatus, created_at])
 }

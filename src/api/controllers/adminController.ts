@@ -303,6 +303,7 @@ export const adminController = {
         marketPendientes,
         marketActivos,
         contactosPendientes,
+        becasPendientes,
       ] = await Promise.all([
         prisma.user.count(),
         prisma.user.groupBy({ by: ["rol"], _count: { _all: true } }),
@@ -311,6 +312,7 @@ export const adminController = {
         prisma.market.count({ where: { estatus: "pendiente" } }),
         prisma.market.count({ where: { estatus: "activo" } }),
         prisma.contactoMensaje.count({ where: { respondido: false } }),
+        prisma.solicitudBeca.count({ where: { estatus: "Pendiente" } }),
       ]);
 
       const roles = Object.fromEntries(
@@ -328,6 +330,7 @@ export const adminController = {
         marketPendientes,
         marketActivos,
         contactosPendientes,
+        becasPendientes,
       });
     } catch (error: any) {
       res.status(500).json({
