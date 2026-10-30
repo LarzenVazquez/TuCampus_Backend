@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
+import { ImagenError, normalizarImagen } from "../../services/imageStorage";
 import { conIdLegado, listaConIdLegado } from "../../lib/legacyAlias";
 
 const ESTADOS = ["DISPONIBLE", "AGOTADO"];
@@ -160,6 +161,7 @@ export const productController = {
         res.status(400).json({ message: error });
         return;
       }
+      data!.imagenUrl = await normalizarImagen(data!.imagenUrl, "producto", req.user!.id);
       const nuevoProducto = await prisma.product.create({
         data: {
           ...(data as any),
@@ -177,6 +179,10 @@ export const productController = {
           product: conIdLegado(nuevoProducto),
         });
     } catch (error: any) {
+      if (error instanceof ImagenError) {
+        res.status(error.status).json({ message: error.message });
+        return;
+      }
       res.status(400).json({ message: "Error al crear", error: error.message });
     }
   },
@@ -255,6 +261,9 @@ export const productController = {
       if (data!.estado === undefined && typeof data!.stock === "number") {
         data!.estado = (data!.stock as number) > 0 ? "DISPONIBLE" : "AGOTADO";
       }
+      if (data!.imagenUrl !== undefined) {
+        data!.imagenUrl = await normalizarImagen(data!.imagenUrl, "producto", req.user!.id);
+      }
 
       const actualizado = await prisma.product.update({
         where: { id },
@@ -265,6 +274,10 @@ export const productController = {
         product: conIdLegado(actualizado),
       });
     } catch (error: any) {
+      if (error instanceof ImagenError) {
+        res.status(error.status).json({ message: error.message });
+        return;
+      }
       res
         .status(400)
         .json({ message: "Error al actualizar", error: error.message });

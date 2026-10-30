@@ -38,6 +38,33 @@ psql "$DATABASE_URL" -f prisma/migrations/20260926120000_add_contacto_y_telefono
 
 (o `npx prisma migrate deploy` si tu historial de migraciones está al día).
 
+### Migración nueva (imágenes propias, RNF-15/16)
+
+Agrega la tabla `business.ImageFile`. Es idempotente:
+
+```bash
+psql "$DATABASE_URL" -f prisma/migrations/20261029120000_imagenes_propias/migration.sql
+```
+
+Después de desplegar, pasa las imágenes que todavía son URLs externas a
+archivos propios. Puedes hacerlo con el botón «Migrar imágenes» del panel
+(cocina para el menú, administrador para el marketplace) o desde la terminal:
+
+```bash
+npm run migrar:imagenes
+```
+
+Las que no se puedan descargar conservan su URL y aparecen en el reporte.
+
+### Variables de entorno nuevas
+
+| Variable                     | Valor recomendado                           | Uso                                                                 |
+| ---------------------------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| `IMAGE_STORAGE`              | `db`                                        | `db` guarda las imágenes en PostgreSQL (Render gratis borra el disco). `disk` las guarda en carpeta |
+| `IMAGE_STORAGE_DIR`          | `uploads/images`                            | Carpeta usada solo con `IMAGE_STORAGE=disk`                         |
+| `PUBLIC_API_URL`             | `https://tucampus-backend.onrender.com`     | Base para las URLs absolutas de `/api/images/:id`                   |
+| `IMAGE_IMPORT_ALLOW_PRIVATE` | sin definir                                 | Solo pruebas locales; en producción debe quedar vacía               |
+
 ## Scripts
 
 | Script                      | Qué hace                                  |
@@ -47,6 +74,7 @@ psql "$DATABASE_URL" -f prisma/migrations/20260926120000_add_contacto_y_telefono
 | `npm run test:kds`          | Pruebas del modelo de saturación del KDS  |
 | `npm run typecheck`         | Chequeo de tipos de TypeScript            |
 | `npm run seed`              | Datos de ejemplo                          |
+| `npm run migrar:imagenes`   | Convierte URLs externas en archivos propios |
 
 Consulta **`CAMBIOS.md`** para el detalle de lo que se corrigió y del
 contrato de la API que usan los frontends.

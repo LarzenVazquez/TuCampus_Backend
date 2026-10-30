@@ -28,6 +28,7 @@
     "pg": "^8.21.0",
     "qrcode": "^1.5.4",
     "resend": "^6.10.0",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
@@ -49,7 +50,8 @@
     "dev": "ts-node --transpile-only server.ts",
     "typecheck": "tsc --noEmit --skipLibCheck -p tsconfig.json",
     "prisma:generate": "prisma generate",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "migrar:imagenes": "ts-node --transpile-only prisma/migrar-imagenes.ts"
   },
   "keywords": [],
   "author": "",

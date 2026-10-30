@@ -15,6 +15,8 @@ import orderRoutes from "./src/api/routes/orderRoutes";
 import chatRoutes from "./src/api/routes/chatRoutes";
 import iaRoutes from "./src/api/routes/iaRoutes";
 import contactoRoutes from "./src/api/routes/contactoRoutes";
+import imageRoutes from "./src/api/routes/imageRoutes";
+import { imagenesAbsolutas } from "./src/api/controllers/imageController";
 import { corsOriginCallback } from "./src/lib/appConfig";
 import { generalLimiter } from "./src/middlewares/rateLimiters";
 
@@ -43,7 +45,11 @@ if (process.env.NODE_ENV !== "test") app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Las imágenes se cachean de forma permanente en el navegador; no cuentan para el límite general.
+app.use("/api/images", imageRoutes);
+
 app.use(generalLimiter);
+app.use(imagenesAbsolutas);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

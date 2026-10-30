@@ -220,3 +220,21 @@ model ContactoMensaje {
 
   @@index([respondido, created_at])
 }
+
+model ImageFile {
+  @@schema("business")
+  id         String   @id @default(uuid())
+  sha256     String   @unique
+  mime       String
+  bytes      Int
+  width      Int
+  height     Int
+  modulo     String
+  datos      Bytes?
+  ruta       String?
+  origen     String?
+  subidoPor  String?
+  created_at DateTime @default(now())
+
+  @@index([modulo])
+}
