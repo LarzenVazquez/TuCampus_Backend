@@ -1,6 +1,7 @@
 import "dotenv/config";
 import prisma from "../src/lib/prismaClient";
 import {
+  migrarImagenesMarketplace,
   migrarImagenesProductos,
   ResultadoMigracion,
 } from "../src/services/imageStorage";
@@ -16,6 +17,10 @@ async function main() {
     `Almacenamiento: ${(process.env.IMAGE_STORAGE || "db").toLowerCase()}`,
   );
   imprimir("Productos de cafetería (RNF-15)", await migrarImagenesProductos());
+  imprimir(
+    "Publicaciones del marketplace (RNF-16)",
+    await migrarImagenesMarketplace(),
+  );
 }
 
 main()

@@ -170,3 +170,87 @@ describe("RNF-15 - almacenamiento propio de imágenes", () => {
     expect((await request(app).get("/api/images/../../etc")).status).toBe(404);
   });
 });
+
+describe("RNF-16 - imágenes propias en el marketplace", () => {
+  let jpg: Buffer;
+  beforeAll(async () => {
+    jpg = await sharp({
+      create: { width: 800, height: 600, channels: 3, background: "#ffb627" },
+    })
+      .jpeg()
+      .toBuffer();
+  });
+
+  it("el vendedor sube una foto y queda en el módulo marketplace", async () => {
+    mockPrisma.imageFile.findUnique.mockResolvedValue(null);
+    mockPrisma.imageFile.create.mockImplementation(async ({ data }: any) => ({
+      id: data.id,
+      mime: data.mime,
+      bytes: data.bytes,
+      width: data.width,
+      height: data.height,
+    }));
+    const res = await request(app)
+      .post("/api/market/images")
+      .set("Authorization", VENDEDOR)
+      .attach("image", jpg, {
+        filename: "libro.jpg",
+        contentType: "image/jpeg",
+      });
+    expect(res.status).toBe(201);
+    expect(res.body.mime).toBe("image/jpeg");
+    expect(mockPrisma.imageFile.create.mock.calls[0][0].data.modulo).toBe(
+      "marketplace",
+    );
+  });
+
+  it("un alumno sin permiso de venta no puede subir fotos", async () => {
+    const res = await request(app)
+      .post("/api/market/images")
+      .set("Authorization", ALUMNO)
+      .attach("image", jpg, {
+        filename: "libro.jpg",
+        contentType: "image/jpeg",
+      });
+    expect(res.status).toBe(403);
+  });
+
+  it("la publicación guarda rutas internas y limita el número de fotos", async () => {
+    mockPrisma.market.create.mockImplementation(async ({ data }: any) => ({
+      id: "item-1",
+      ...data,
+    }));
+    const base = {
+      titulo: "Calculadora",
+      precio: 250,
+      descripcion: "Buen estado",
+    };
+    const ok = await request(app)
+      .post("/api/market/publish")
+      .set("Authorization", VENDEDOR)
+      .send({
+        ...base,
+        imagenes: [`/api/images/${ID_IMG}`, `/api/images/${ID_IMG}`],
+      });
+    expect(ok.status).toBe(201);
+    expect(mockPrisma.market.create.mock.calls[0][0].data.imagenes).toEqual([
+      `/api/images/${ID_IMG}`,
+    ]);
+
+    const muchas = await request(app)
+      .post("/api/market/publish")
+      .set("Authorization", VENDEDOR)
+      .send({ ...base, imagenes: Array(7).fill(`/api/images/${ID_IMG}`) });
+    expect(muchas.status).toBe(400);
+  });
+
+  it("no se importan imágenes al editar un anuncio ajeno", async () => {
+    mockPrisma.market.count.mockResolvedValue(0);
+    const res = await request(app)
+      .put("/api/market/edit/item-ajeno")
+      .set("Authorization", VENDEDOR)
+      .send({ imagenes: ["https://example.com/foto.jpg"] });
+    expect(res.status).toBe(404);
+    expect(mockPrisma.imageFile.create).not.toHaveBeenCalled();
+  });
+});

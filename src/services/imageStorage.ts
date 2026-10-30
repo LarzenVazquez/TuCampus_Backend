@@ -329,3 +329,44 @@ export async function migrarImagenesProductos(
   }
   return res;
 }
+
+export async function migrarImagenesMarketplace(
+  subidoPor?: string,
+): Promise<ResultadoMigracion> {
+  const items = await prisma.market.findMany({
+    select: { id: true, titulo: true, imagenes: true },
+  });
+  const res: ResultadoMigracion = { revisadas: 0, migradas: 0, fallidas: [] };
+  for (const item of items) {
+    if (!item.imagenes.some(esExterna)) continue;
+    res.revisadas++;
+    const nuevas: string[] = [];
+    let error: { url: string; mensaje: string } | null = null;
+    for (const url of item.imagenes) {
+      if (!esExterna(url)) {
+        nuevas.push(url);
+        continue;
+      }
+      try {
+        nuevas.push(await normalizarImagen(url, "marketplace", subidoPor));
+      } catch (e: any) {
+        // Se conserva la original para no perder la referencia; queda reportada.
+        nuevas.push(url);
+        error = error ?? { url, mensaje: e.message };
+      }
+    }
+    await prisma.market.update({
+      where: { id: item.id },
+      data: { imagenes: nuevas },
+    });
+    if (error)
+      res.fallidas.push({
+        id: item.id,
+        nombre: item.titulo,
+        url: error.url,
+        error: error.mensaje,
+      });
+    else res.migradas++;
+  }
+  return res;
+}

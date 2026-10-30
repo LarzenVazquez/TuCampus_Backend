@@ -7,6 +7,7 @@ import {
   ModuloImagen,
   guardarImagen,
   leerImagen,
+  migrarImagenesMarketplace,
   migrarImagenesProductos,
 } from "../../services/imageStorage";
 
@@ -103,7 +104,10 @@ export const migrarImagenes =
   (modulo: ModuloImagen) =>
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const resultado = await migrarImagenesProductos(req.user?.id);
+      const resultado =
+        modulo === "producto"
+          ? await migrarImagenesProductos(req.user?.id)
+          : await migrarImagenesMarketplace(req.user?.id);
       await prisma.activityLog.create({
         data: {
           userId: req.user!.id,

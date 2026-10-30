@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import prisma from "../../lib/prismaClient";
 import { conIdLegado, listaConIdLegado } from "../../lib/legacyAlias";
 import { notificarUsuario } from "../../services/notificationService";
+import { ImagenError, normalizarImagen } from "../../services/imageStorage";
 
-const IMG_DEFAULT =
-  "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e";
+const MAX_IMAGENES = 6;
 const ESTATUS_VALIDOS = [
   "pendiente",
   "activo",
@@ -25,6 +25,18 @@ const conVendedor = (item: any) =>
     ...item,
     nombreVendedor: item.vendedor?.nombre?.split(" ")[0] ?? "Usuario",
   });
+
+/** RNF-16: todas las imágenes del anuncio quedan como archivos propios. */
+const imagenesPropias = async (
+  data: Record<string, unknown>,
+  userId: string,
+) => {
+  if (!Array.isArray(data.imagenes)) return;
+  const rutas = [];
+  for (const u of data.imagenes as string[])
+    rutas.push(await normalizarImagen(u, "marketplace", userId));
+  data.imagenes = Array.from(new Set(rutas.filter(Boolean)));
+};
 
 const leerAnuncio = (body: any, parcial = false) => {
   const data: Record<string, unknown> = {};
@@ -57,13 +69,11 @@ const leerAnuncio = (body: any, parcial = false) => {
   }
   if (body.imagenes !== undefined || !parcial) {
     const imagenes = Array.isArray(body.imagenes)
-      ? body.imagenes
-          .filter(
-            (u: unknown) => typeof u === "string" && /^https?:\/\//i.test(u),
-          )
-          .slice(0, 6)
+      ? body.imagenes.filter((u: unknown) => typeof u === "string" && u.trim())
       : [];
-    data.imagenes = imagenes.length > 0 ? imagenes : [IMG_DEFAULT];
+    if (imagenes.length > MAX_IMAGENES)
+      return { error: `Puedes subir como máximo ${MAX_IMAGENES} imágenes.` };
+    data.imagenes = imagenes;
   }
   return { data };
 };
@@ -76,6 +86,7 @@ export const marketController = {
         res.status(400).json({ message: error });
         return;
       }
+      await imagenesPropias(data!, req.user!.id);
 
       const nuevoItem = await prisma.market.create({
         data: {
@@ -90,6 +101,10 @@ export const marketController = {
         item: conIdLegado(nuevoItem),
       });
     } catch (error: any) {
+      if (error instanceof ImagenError) {
+        res.status(error.status).json({ message: error.message });
+        return;
+      }
       res
         .status(400)
         .json({ message: "Error al publicar", error: error.message });
@@ -120,6 +135,16 @@ export const marketController = {
         res.status(400).json({ message: error });
         return;
       }
+      const propio = await prisma.market.count({
+        where: { id, vendedorId: req.user!.id },
+      });
+      if (propio === 0) {
+        res
+          .status(404)
+          .json({ message: "Producto no encontrado o no tienes permiso" });
+        return;
+      }
+      await imagenesPropias(data!, req.user!.id);
 
       const soloVendido =
         req.body?.estatus === "vendido" && Object.keys(data!).length === 0;
@@ -144,6 +169,10 @@ export const marketController = {
           : "Producto actualizado y enviado a revisión",
       });
     } catch (error: any) {
+      if (error instanceof ImagenError) {
+        res.status(error.status).json({ message: error.message });
+        return;
+      }
       res
         .status(400)
         .json({ message: "Error al actualizar", error: error.message });

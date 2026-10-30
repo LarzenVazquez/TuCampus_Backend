@@ -5,6 +5,11 @@ import {
   isAdmin,
   isSeller,
 } from "../../middlewares/authMiddleware";
+import {
+  migrarImagenes,
+  recibirImagen,
+  subirImagen,
+} from "../controllers/imageController";
 
 const router = Router();
 
@@ -28,6 +33,20 @@ router.patch(
 );
 
 router.get("/all", marketController.getMarketItems);
+
+router.post(
+  "/images",
+  verifyToken,
+  isSeller,
+  recibirImagen,
+  subirImagen("marketplace"),
+);
+router.post(
+  "/images/migrar",
+  verifyToken,
+  isAdmin,
+  migrarImagenes("marketplace"),
+);
 
 router.post("/publish", verifyToken, isSeller, marketController.publishItem);
 router.get("/my-items", verifyToken, marketController.getMyItems);
