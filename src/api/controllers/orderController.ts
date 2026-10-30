@@ -83,6 +83,60 @@ const serializarOrden = (order: any) => {
   };
 };
 
+const RE_QR = /^QR-[0-9A-F]{12}$/;
+
+const normalizarQR = (valor: unknown) =>
+  (typeof valor === "string" ? valor : Array.isArray(valor) ? String(valor[0] ?? "") : "")
+    .trim()
+    .toUpperCase();
+
+const ESTATUS_LEGIBLE: Record<string, string> = {
+  PAGADO: "En preparación",
+  LISTO: "Listo para entregar",
+  ENTREGADO: "Entregado",
+};
+
+const fechaCorta = (d?: Date | null) =>
+  d
+    ? d.toLocaleString("es-MX", { timeZone: "America/Mexico_City", dateStyle: "short", timeStyle: "short" })
+    : "";
+
+const rechazoEntrega = (o: { status: string; fechaEntregado?: Date | null }) =>
+  o.status === "ENTREGADO"
+    ? {
+        message: `Este pedido ya fue entregado${o.fechaEntregado ? ` (${fechaCorta(o.fechaEntregado)})` : ""}. El código no puede volver a usarse.`,
+        status: o.status,
+      }
+    : {
+        message: "El pedido aún no está listo. Espera a que cocina lo marque como listo antes de entregarlo.",
+        status: o.status,
+      };
+
+/** Detalle que ve el staff al escanear: productos, cantidades, alumno y estatus. */
+const detalleQR = (order: any) => ({
+  id: order.id,
+  qrCodeData: order.qrCodeData,
+  status: order.status,
+  estatusLegible: ESTATUS_LEGIBLE[order.status] ?? order.status,
+  puedeEntregar: order.status === "LISTO",
+  aviso: order.status === "LISTO" ? null : rechazoEntrega(order).message,
+  tipo: order.tipo,
+  total: Number(order.total),
+  metodoPago: order.metodoPago,
+  fecha: order.fecha,
+  fechaListo: order.fechaListo,
+  fechaEntregado: order.fechaEntregado,
+  tiempoEstimadoMin: order.tiempoEstimadoMin,
+  alumno: order.user ? { id: order.user.id, nombre: order.user.nombre, matricula: order.user.matricula } : null,
+  items: order.items.map((i: any) => ({
+    productId: i.productId,
+    nombre: i.nombre,
+    cantidad: i.cantidad,
+    precio: Number(i.precio),
+    imagenUrl: i.product?.imagenUrl ?? null,
+  })),
+});
+
 const serializarCarrito = (cart: any) => ({
   id: cart?.id ?? null,
   total: Number(cart?.total ?? 0),
@@ -584,32 +638,68 @@ export const orderController = {
     }
   },
 
+  /**
+   * GET /orders/qr/:codigo (RQF25) - detalle de la orden al escanear su QR.
+   * Solo staff de cafetería o administrador. No modifica la orden.
+   */
+  getOrderByQR: async (req: Request, res: Response): Promise<void> => {
+    try {
+      const codigo = normalizarQR(req.params.codigo);
+      if (!RE_QR.test(codigo)) {
+        res.status(400).json({ message: "El código no tiene el formato de un QR de TuCampus." });
+        return;
+      }
+      const order = await prisma.order.findFirst({
+        where: { qrCodeData: codigo, status: { not: "CARRITO" } },
+        include: {
+          items: { include: { product: { select: { imagenUrl: true } } } },
+          user: { select: { id: true, nombre: true, matricula: true } },
+        },
+      });
+      if (!order) {
+        res.status(404).json({ message: "No existe un pedido con ese código QR." });
+        return;
+      }
+      res.json(detalleQR(order));
+    } catch (error) {
+      res.status(500).json({ message: "Error al consultar el pedido" });
+    }
+  },
+
+  /**
+   * POST /orders/verify-qr - entrega la orden. Solo procede si está LISTO;
+   * un QR ya entregado no puede reabrir el pedido.
+   */
   verifyOrder: async (req: Request, res: Response): Promise<void> => {
     try {
-      const raw = req.body?.qrData ?? req.body?.qrCodeData;
-      const qrData = typeof raw === "string" ? raw.trim().toUpperCase() : "";
+      const qrData = normalizarQR(req.body?.qrData ?? req.body?.qrCodeData);
       if (!qrData) {
         res.status(400).json({ message: "Falta el código QR de la orden." });
         return;
       }
 
       const pedido = await prisma.order.findFirst({
-        where: { qrCodeData: qrData, status: { in: ESTADOS_ACTIVOS } },
+        where: { qrCodeData: qrData, status: { not: "CARRITO" } },
       });
       if (!pedido) {
-        res
-          .status(404)
-          .json({ message: "QR inválido o la orden ya fue entregada." });
+        res.status(404).json({ message: "No existe un pedido con ese código QR." });
         return;
       }
 
-      const order = await prisma.order.update({
+      // La condición status = LISTO hace la entrega atómica: dos escaneos
+      // simultáneos no pueden entregar el mismo pedido dos veces.
+      const entregado = await prisma.order.updateMany({
+        where: { id: pedido.id, status: "LISTO" },
+        data: { status: "ENTREGADO", fechaEntregado: new Date() },
+      });
+      if (entregado.count === 0) {
+        const actual = await prisma.order.findUnique({ where: { id: pedido.id } });
+        res.status(409).json(rechazoEntrega(actual ?? pedido));
+        return;
+      }
+
+      const order = await prisma.order.findUnique({
         where: { id: pedido.id },
-        data: {
-          status: "ENTREGADO",
-          fechaEntregado: new Date(),
-          fechaListo: pedido.fechaListo ?? new Date(),
-        },
         include: includeOrdenCompleta,
       });
 
@@ -624,6 +714,7 @@ export const orderController = {
       res.status(500).json({ message: "Error al verificar" });
     }
   },
+
 
   getPaidOrders: async (_req: Request, res: Response): Promise<void> => {
     try {

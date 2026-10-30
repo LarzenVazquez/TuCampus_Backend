@@ -22,6 +22,7 @@ router.post("/beca/checkout", orderController.becaCheckout);
 router.get("/kitchen", isAdminC, orderController.getPaidOrders);
 router.get("/ready", isAdminC, orderController.getReadyOrders);
 router.put("/ready/:id", isAdminC, orderController.markAsReady);
+router.get("/qr/:codigo", hasRole("A_C", "A"), orderController.getOrderByQR);
 router.post("/verify-qr", hasRole("A_C", "A"), orderController.verifyOrder);
 
 router.get("/stats", isAdminC, orderController.getGlobalStats);

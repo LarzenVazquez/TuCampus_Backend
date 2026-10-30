@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 const fn = () => jest.fn();
 const mockPrisma: any = {
+  $queryRaw: jest.fn(async () => []),
   $transaction: jest.fn(async (arg: any) =>
     typeof arg === "function" ? arg(mockPrisma) : Promise.all(arg),
   ),
@@ -45,6 +46,7 @@ const mockPrisma: any = {
     findMany: fn(),
     findUnique: fn(),
     update: fn(),
+    updateMany: fn(),
     create: fn(),
     count: fn(),
     aggregate: fn(),
@@ -67,6 +69,15 @@ const mockPrisma: any = {
   },
   recommendation: { findMany: fn(), deleteMany: fn() },
   userFile: { findMany: fn(), create: fn() },
+  imageFile: { findUnique: fn(), create: fn(), count: fn() },
+  solicitudBeca: {
+    findFirst: fn(),
+    findMany: fn(),
+    findUnique: fn(),
+    create: fn(),
+    update: fn(),
+    groupBy: fn(),
+  },
 };
 
 jest.mock("../lib/prismaClient", () => ({
@@ -232,7 +243,8 @@ describe("Órdenes / KDS", () => {
       status: "LISTO",
       fechaListo: new Date(),
     });
-    mockPrisma.order.update.mockResolvedValue({
+    mockPrisma.order.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.order.findUnique.mockResolvedValue({
       id: "o1",
       userId: "alumno-1",
       status: "ENTREGADO",
